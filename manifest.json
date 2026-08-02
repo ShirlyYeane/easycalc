@@ -1,13 +1,16 @@
 {
-  "name": "TalkCalc - Voice Calculator for Everyone",
+  "name": "TalkCalc - Voice Calculator",
   "short_name": "TalkCalc",
-  "description": "Accessible calculator with voice input, large buttons, and customizable themes. Designed for everyone.",
+  "description": "Voice-powered accessible calculator. Speak, type or tap. Unit & currency converter, scientific mode, history, notes. Works offline.",
   "start_url": "/index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#1D4ED8",
   "theme_color": "#1D4ED8",
-  "categories": ["utilities", "productivity"],
+  "categories": [
+    "utilities",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "icons/icon-72.png",
