@@ -601,25 +601,48 @@
     // ══ Free trial ═════════════════════════════════════════════════════════
     // Nobody pays for a feature they have only seen a screenshot of. Free users get
     // five real openings of the Pro tabs before the wall goes up.
-    const TRIAL_LIMIT = 5, TRIAL_KEY = 'tc_trials_used';
+    // Five tries PER TAB rather than five shared: exploring the converter shouldn't
+    // eat the tries someone needs to give the shopping list a fair go.
+    const TRIAL_LIMIT = 5, TRIAL_KEY = 'tc_trials';
     const PRO_TABS = ['convert', 'pct', 'sci', 'notes'];
-    let trialsUsed = 0;
+    let trials = {};
     const trialGranted = new Set();   // per page load, so re-entering a tab is free
-    try { trialsUsed = Math.max(0, Math.min(TRIAL_LIMIT, parseInt(localStorage.getItem(TRIAL_KEY), 10) || 0)); } catch (e) {}
-    function trialsLeft() { return Math.max(0, TRIAL_LIMIT - trialsUsed); }
-    function trialAllow(tab) {
-      if (trialGranted.has(tab)) return true;        // already opened since load
-      if (trialsUsed >= TRIAL_LIMIT) return false;
-      trialsUsed++; trialGranted.add(tab);
-      try { localStorage.setItem(TRIAL_KEY, String(trialsUsed)); } catch (e) {}
-      const left = trialsLeft();
-      showToast(left === 0 ? 'Last free try' : left + (left === 1 ? ' free try left' : ' free tries left'));
-      return true;
+    try {
+      const raw = JSON.parse(localStorage.getItem(TRIAL_KEY) || '{}');
+      PRO_TABS.forEach(tb => {
+        trials[tb] = Math.max(0, Math.min(TRIAL_LIMIT, parseInt(raw && raw[tb], 10) || 0));
+      });
+    } catch (e) { PRO_TABS.forEach(tb => { trials[tb] = 0; }); }
+    function trialsLeft(tab) { return Math.max(0, TRIAL_LIMIT - (trials[tab] || 0)); }
+
+    // While Play is being asked whether this account already owns Pro, and after that
+    // lookup fails, the Pro tabs must not look like a plain paywall to someone who
+    // has already paid — a reinstall wipes local storage, not the entitlement.
+    let proChecking = false, proCheckFailed = false;
+    document.addEventListener('ec-pro-checking',     () => { proChecking = true;  proCheckFailed = false; updateTrialBars(); });
+    document.addEventListener('ec-pro-checked',      () => { proChecking = false; proCheckFailed = false; updateTrialBars(); });
+    document.addEventListener('ec-pro-check-failed', () => { proChecking = false; proCheckFailed = true;  updateTrialBars(); });
+    function isProNow() { return typeof EasyCalcIAP !== 'undefined' && EasyCalcIAP.isUnlocked(); }
+
+    // Looking is free. Opening a tab costs nothing — a try is only spent the first
+    // time you actually DO something there (type a number, press a key, add an item).
+    function trialCanOpen(tab) { return trialGranted.has(tab) || trialsLeft(tab) > 0; }
+    function trialUse(tab) {
+      if (isProNow()) return;
+      if (trialGranted.has(tab)) return;             // already counted this session
+      if ((trials[tab] || 0) >= TRIAL_LIMIT) return;
+      trials[tab] = (trials[tab] || 0) + 1;
+      trialGranted.add(tab);
+      try { localStorage.setItem(TRIAL_KEY, JSON.stringify(trials)); } catch (e) {}
+      const left = trialsLeft(tab);
+      showToast(left === 0 ? 'Last free try for this tab'
+                           : left + (left === 1 ? ' free try left here' : ' free tries left here'));
+      updateTrialBars();
     }
 
     window.ecTab = function(tab) {
       const isPro = typeof EasyCalcIAP !== 'undefined' && EasyCalcIAP.isUnlocked();
-      if (PRO_TABS.includes(tab) && !isPro && !trialAllow(tab)) { showPaywall(); return; }
+      if (PRO_TABS.includes(tab) && !isPro && !trialCanOpen(tab)) { showPaywall(); return; }
       ['calc','convert','pct','sci','notes'].forEach(t => {
         const panel = document.getElementById('ec-panel-' + t);
         const btn   = document.getElementById('tab-' + t);
@@ -650,14 +673,28 @@
           const msg = document.createElement('span'); msg.className = 'msg';
           const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'go';
           btn.textContent = 'Unlock Pro';
-          btn.addEventListener('click', () => { try { showPaywall(); } catch (e) {} });
+          btn.addEventListener('click', () => {
+            try { proCheckFailed ? ecRestorePurchase() : showPaywall(); } catch (e) {}
+          });
           bar.appendChild(msg); bar.appendChild(btn);
           panel.insertBefore(bar, panel.firstChild);
         }
-        const left = trialsLeft();
-        bar.querySelector('.msg').textContent =
-          left > 0 ? 'Free trial \u00B7 ' + left + ' of ' + TRIAL_LIMIT + ' left'
-                   : 'Free trial finished';
+        const msgEl = bar.querySelector('.msg'), goEl = bar.querySelector('.go');
+        if (proChecking) {
+          msgEl.textContent = 'Checking your purchase\u2026';
+          goEl.style.display = 'none';
+        } else if (proCheckFailed) {
+          msgEl.textContent = 'Couldn\u2019t reach Google Play. Already bought Pro?';
+          goEl.textContent = 'Restore';
+          goEl.style.display = '';
+        } else {
+          const left = trialsLeft(tab);
+          msgEl.textContent =
+            left > 0 ? 'Free trial \u00B7 ' + left + ' of ' + TRIAL_LIMIT + ' left on this tab'
+                     : 'Free trial finished for this tab';
+          goEl.textContent = 'Unlock Pro';
+          goEl.style.display = '';
+        }
         bar.style.background  = t.accent + '18';
         bar.style.borderColor = t.accent + '55';
         bar.style.color       = t.btnText;
@@ -699,10 +736,24 @@
     };
     window.ecRestorePurchase = async function() {
       const btn = document.querySelector('.pw-restore');
+      const reset = msg => {
+        if (!btn) return;
+        btn.textContent = msg;
+        setTimeout(() => { if (btn) { btn.textContent = 'Restore previous purchase'; btn.disabled = false; } }, 3000);
+      };
       if (btn) { btn.textContent = 'Checking\u2026'; btn.disabled = true; }
-      const ok = await EasyCalcIAP.restorePurchases();
-      if (ok) ecClosePaywall();
-      else { if (btn) btn.textContent = 'No purchase found'; setTimeout(() => { if (btn) { btn.textContent = 'Restore previous purchase'; btn.disabled = false; }}, 2500); }
+      let ok = false;
+      try {
+        ok = await EasyCalcIAP.restorePurchases();
+      } catch (e) {
+        // Offline or Play unavailable. "No purchase found" would be a lie here, and
+        // the worst possible thing to tell someone who has already paid.
+        proCheckFailed = true; updateTrialBars();
+        reset('Couldn\u2019t reach Google Play');
+        return;
+      }
+      if (ok) { proCheckFailed = false; ecClosePaywall(); }
+      else reset('No purchase found');
     };
 
     // ── Converter ──
@@ -826,6 +877,7 @@
 
     window.ecConvCalc = function() {
       const inEl = document.getElementById('conv-a');
+      if (inEl && inEl.value.trim()) trialUse('convert');
       groupConvInput(inEl);
       const cleanVal = parseLocaleNum(inEl?.value);
       const from = document.getElementById('conv-a-unit')?.value;
@@ -842,6 +894,7 @@
 
     window.ecConvCalcRev = function() {
       const inEl = document.getElementById('conv-b');
+      if (inEl && inEl.value.trim()) trialUse('convert');
       groupConvInput(inEl);
       const cleanVal = parseLocaleNum(inEl?.value);
       const from = document.getElementById('conv-b-unit')?.value;
@@ -936,6 +989,7 @@
     window.ecP1 = function() {
       const x = pctVal('p1x'), y = pctVal('p1y'), el = document.getElementById('p1r');
       if (el) el.textContent = (x === null || y === null) ? '\u2014' : `= ${fmtPct(x / 100 * y)}`;
+      if (PCT_FIELDS[1].some(id => ((document.getElementById(id)||{}).value || '').trim())) trialUse('pct');
       pctToggleClear(1);
     };
     window.ecP2 = function() {
@@ -944,11 +998,13 @@
         if (b === null || p === null) el.textContent = '\u2014';
         else { const a = b * p / 100; el.textContent = `= ${fmtPct(b + a)}  (+${fmtPct(a)})`; }
       }
+      if (PCT_FIELDS[2].some(id => ((document.getElementById(id)||{}).value || '').trim())) trialUse('pct');
       pctToggleClear(2);
     };
     window.ecP3 = function() {
       const x = pctVal('p3x'), y = pctVal('p3y'), el = document.getElementById('p3r');
       if (el) el.textContent = (x === null || y === null || y === 0) ? '\u2014' : `= ${fmtPct(x / y * 100)}%`;
+      if (PCT_FIELDS[3].some(id => ((document.getElementById(id)||{}).value || '').trim())) trialUse('pct');
       pctToggleClear(3);
     };
 
@@ -1060,6 +1116,7 @@
     };
 
     window.sciPress = function(lb) {
+      trialUse('sci');
       const toRad = v => sci.isRad ? v : v * Math.PI / 180;
       const n = parseFloat(sci.val); let result = null;
       if (lb.length===1 && lb>='0' && lb<='9')     { if (sci._reset) { sci.val=lb; sci._reset=false; } else sci.val = sci.val==='0' ? lb : sci.val+lb; }
@@ -1625,6 +1682,7 @@
 
     function addListItem(label, amt) {
       const l = listById(openList); if (!l) return false;
+      trialUse('notes');
       if (amt === null || isNaN(amt)) return false;
       l.items.push({ id: ++listSeq, label: (label || '').trim() || 'Item ' + (l.items.length + 1), amt: amt });
       saveLists(); renderNotes(); return true;
@@ -1767,6 +1825,7 @@
         confirm: { text: 'Create', onConfirm: v => {
           const name = (v.name || '').trim();
           if (!name) { showToast('Give the list a name'); return; }
+          trialUse('notes');
           const l = { id: ++listSeq, name, split: 1, cur: appCurrency, items: [] };
           lists.unshift(l); openList = l.id; saveLists(); renderNotes();
           document.getElementById('li-label')?.focus();

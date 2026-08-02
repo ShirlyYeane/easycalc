@@ -20,18 +20,29 @@ const EasyCalcIAP = (() => {
   function isInTWA() { return 'getDigitalGoodsService' in window; }
 
   async function init() {
-    if (isUnlocked()) document.dispatchEvent(new CustomEvent('ec-pro-status', { detail: { unlocked: true } }));
+    const already = isUnlocked();
+    if (already) document.dispatchEvent(new CustomEvent('ec-pro-status', { detail: { unlocked: true } }));
     if (!isInTWA()) return;
-    try { _svc = await window.getDigitalGoodsService(PLAY_BILLING); await restorePurchases(); }
-    catch (e) { console.warn('[IAP]', e); }
+    // Only announce the check when Pro is NOT already known locally — that is the
+    // case that matters: a fresh install where a paying customer would otherwise
+    // stare at padlocks while the Play round-trip is still in flight.
+    if (!already) document.dispatchEvent(new CustomEvent('ec-pro-checking'));
+    try {
+      _svc = await window.getDigitalGoodsService(PLAY_BILLING);
+      const owns = await restorePurchases();
+      if (!already) document.dispatchEvent(new CustomEvent('ec-pro-checked', { detail: { owns } }));
+    } catch (e) {
+      console.warn('[IAP]', e);
+      // Play unreachable (offline, service down). Never silently show a paywall to
+      // someone who may have already paid — say so and offer Restore.
+      if (!already) document.dispatchEvent(new CustomEvent('ec-pro-check-failed'));
+    }
   }
 
   async function restorePurchases() {
     if (!_svc) return false;
-    try {
-      const purchases = await _svc.listPurchases();
-      if (purchases.some(p => p.itemId === SKU)) { setUnlocked(true); return true; }
-    } catch (e) { console.warn('[IAP] restore error', e); }
+    const purchases = await _svc.listPurchases();   // let errors reach the caller
+    if (purchases.some(p => p.itemId === SKU)) { setUnlocked(true); return true; }
     return false;
   }
 
