@@ -516,6 +516,8 @@ function render() {
   } else {
     app.innerHTML = renderCalc(t, fs, mh);
     bindCalcEvents();
+    // Format display number with locale delimiter
+    if (window._tcFormatDisplay) window._tcFormatDisplay();
   }
 }
 
@@ -764,6 +766,9 @@ document.addEventListener("keydown", (e) => {
   if (state.showSettings) return;
   const input = document.getElementById("textInput");
   if (document.activeElement === input) return;
+  if (document.activeElement?.closest?.('.pro-panel')) return;
+  const proIds = ['ec-panel-convert', 'ec-panel-pct', 'ec-panel-sci', 'ec-panel-notes'];
+  if (proIds.some(id => document.getElementById(id)?.classList.contains('active'))) return;
   const map = { Enter: "=", "=": "=", Escape: "C", Delete: "C", Backspace: "⌫", "+": "+", "-": "-", "*": "×", "/": "÷" };
   if ("0123456789.".includes(e.key)) { e.preventDefault(); handlePress(e.key); }
   else if (map[e.key]) { e.preventDefault(); handlePress(map[e.key]); }
@@ -773,7 +778,7 @@ document.addEventListener("keydown", (e) => {
 initSpeechRecognition();
 render();
 
-// Register service worker
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js").catch(() => { });
-}
+// Service worker disabled during development
+// if ("serviceWorker" in navigator) {
+//   navigator.serviceWorker.register("/sw.js").catch(() => { });
+// }
