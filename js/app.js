@@ -1,5 +1,21 @@
 // ========== TalkCalc - Accessible Calculator PWA ==========
 
+// Shared icon set, drawn as SVG rather than typed as Unicode characters.
+// Glyphs like ← ↗ ⋯ have no single font on Android that contains them all, so each
+// resolves through font fallback to a different font: mismatched stroke weights,
+// sizes and baselines, and font-weight is ignored because those fallbacks ship no
+// bold. These share one 24px grid and one 2px round-capped stroke, and inherit
+// colour via currentColor so themes keep working.
+// Defined here because app.js loads before the inline script in index.html, so both
+// can read it — and so the arrow exists in exactly one place.
+const TC_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">';
+window.TC_ICON = {
+  back:  TC_SVG + '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>',
+  // The three-node graph is the share affordance people recognise; ↗ meant nothing.
+  share: TC_SVG + '<circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="m8.6 13.4 6.9 4"/><path d="m15.5 6.6-6.9 4"/></svg>',
+  more:  '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>'
+};
+
 const THEMES = {
   midnight: {
     name: "Midnight Blue", emoji: "🌙",
@@ -619,7 +635,7 @@ function renderSettings(t, fs) {
   return `
     <div class="settings show" style="background:${t.settingsBg};color:${t.headerText}">
       <div class="settings-header" style="background:${t.headerBg};border-color:${t.btnBorder}">
-        <button id="backBtn" style="border-color:${t.btnBorder};color:${t.headerText}"><span style="font-size:1.1em;line-height:1">←</span> Back</button>
+        <button id="backBtn" style="border-color:${t.btnBorder};color:${t.headerText}">${window.TC_ICON.back}<span>Back</span></button>
         <h1>⚙️ Settings</h1>
       </div>
       <div class="settings-body">
