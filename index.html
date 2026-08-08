@@ -46,7 +46,21 @@
     .calc-main { display: flex; flex-direction: column; height: 100vh; }
     .calc-main.hide { display: none; }
     .settings-header { padding: 16px 20px; display: flex; align-items: center; border-bottom: 2px solid; position: relative; }
-    .settings-header button { background: none; border: 2px solid; font-size: 1rem; cursor: pointer; border-radius: 12px; padding: 8px 16px; font-family: inherit; display: flex; align-items: center; gap: 6px; line-height: 1; }
+    .settings-header button { background: none; border: 2px solid; font-size: 1rem; font-weight: 700; cursor: pointer; border-radius: 12px; padding: 8px 16px 8px 13px; font-family: inherit; display: flex; align-items: center; gap: 7px; line-height: 1; min-height: 44px; position: relative; overflow: hidden; -webkit-tap-highlight-color: transparent; transition: transform 0.13s ease; }
+    /* Same tint-and-press treatment as the notes icon buttons, so navigation feels
+       consistent across the app rather than inert here and tactile there. */
+    .settings-header button::before { content: ''; position: absolute; inset: 0; background: currentColor; opacity: 0; transition: opacity 0.16s ease; pointer-events: none; }
+    .settings-header button:hover::before, .settings-header button:focus-visible::before { opacity: 0.1; }
+    .settings-header button:active::before { opacity: 0.18; }
+    .settings-header button:active { transform: scale(0.95); }
+    .settings-header button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+    /* Sized to the label's cap height so arrow and word share an optical baseline. */
+    .settings-header button svg { position: relative; width: 18px; height: 18px; display: block; flex-shrink: 0; }
+    .settings-header button span { position: relative; }
+    @media (prefers-reduced-motion: reduce) {
+      .settings-header button, .settings-header button::before { transition: none; }
+      .settings-header button:active { transform: none; }
+    }
     .settings-header h1 { font-size: 1.6rem; font-weight: 800; margin-left: auto; }
     .settings-body { padding: 20px; display: flex; flex-direction: column; gap: 20px; max-width: 500px; margin: 0 auto; }
     .settings-card { border-radius: 16px; padding: 20px; border: 2px solid; }
@@ -71,8 +85,18 @@
     .conv-input-wrap { flex: 1; border-radius: 12px; border: 3px solid; display: flex; align-items: center; overflow: hidden; min-width: 0; }
     .conv-input-wrap input { flex: 1; border: none; outline: none; background: transparent; color: inherit; font-weight: 700; font-size: 1.2rem; font-family: inherit; padding: 10px 12px; min-width: 0; }
     .conv-unit-select { border-radius: 10px; border: 3px solid; font-weight: 700; font-family: inherit; font-size: 0.9rem; padding: 8px 10px; cursor: pointer; background: transparent; min-width: 76px; flex-shrink: 0; }
-    .conv-swap { font-size: 1.4rem; font-weight: 800; opacity: 0.45; text-align: center; }
+    /* A real button now, not a glyph: needs an explicit touch target (44px is the
+       minimum comfortable tap size) and colour inheritance, which buttons don't do. */
+    .conv-swap { display: block; margin: 0 auto; background: transparent; border: none;
+      font-family: inherit; font-size: 1.4rem; font-weight: 800; line-height: 1;
+      opacity: 0.45; text-align: center; cursor: pointer; color: inherit;
+      min-height: 44px; min-width: 64px; padding: 6px 18px; border-radius: 12px;
+      transition: opacity 0.15s, transform 0.2s; }
+    .conv-swap:hover, .conv-swap:focus-visible { opacity: 1; }
+    .conv-swap:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+    .conv-swap.swapped { transform: rotate(180deg); }
     .currency-search { border-radius: 12px; border: 3px solid; padding: 10px 14px; width: 100%; font-family: inherit; font-size: 1rem; font-weight: 600; background: transparent; outline: none; }
+    .curr-search-msg { font-size: 0.78rem; font-weight: 600; padding: 6px 4px 0; line-height: 1.35; }
     .fx-note { font-size: 0.75rem; opacity: 0.4; text-align: center; flex-shrink: 0; }
     .pct-card { border-radius: 18px; border: 3px solid; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
     .pct-card-title { font-size: 0.9rem; font-weight: 700; opacity: 0.7; }
@@ -85,11 +109,30 @@
     .pct-label { font-size: 0.9rem; font-weight: 700; opacity: 0.6; white-space: nowrap; flex-shrink: 0; }
     .pct-result { flex: 1; font-size: 1.5rem; font-weight: 800; text-align: right; min-width: 0; word-break: break-all; }
     .pct-result-row { display: flex; align-items: center; gap: 8px; padding: 4px 0 0; }
-    .pct-clear { font-family: inherit; font-size: 0.78rem; font-weight: 700; padding: 6px 12px; border-radius: 10px; border: 2px solid; background: transparent; cursor: pointer; flex-shrink: 0; visibility: hidden; transition: opacity 0.15s; opacity: 0; }
-    .pct-clear.show { visibility: visible; opacity: 0.75; }
+    /* Clear and Save are a matched pair: same metrics, same show/hide mechanism.
+       Clear previously used visibility:hidden, which reserves its space, so an empty
+       row left a blank gap and Save appeared shunted to the right of nothing. Both now
+       collapse with display:none and share one .show class.
+       .save-res is declared later in this sheet, so the Save half needs the doubled
+       selector to win on specificity rather than relying on source order. */
+    .pct-clear, .save-res.pct-save { font-family: inherit; font-size: 0.78rem;
+      font-weight: 700; padding: 7px 13px; border-radius: 10px; border: 2px solid;
+      background: transparent; cursor: pointer; flex-shrink: 0; display: none;
+      align-items: center; gap: 4px; line-height: 1; min-height: 36px;
+      transition: opacity 0.15s; }
+    .pct-clear.show, .save-res.pct-save.show { display: inline-flex; }
+    /* Save is the constructive action, so it reads at full strength; Clear is
+       secondary and sits back until you reach for it. */
+    .pct-clear { opacity: 0.75; }
     .pct-clear:active { opacity: 1; }
+    .save-res.pct-save:active { opacity: 0.6; }
     .sci-top-row { display: flex; gap: 6px; flex-shrink: 0; }
     .sci-mode-btn { flex: 1; padding: 9px; border-radius: 10px; border: 2px solid; font-weight: 700; font-family: inherit; font-size: 0.85rem; cursor: pointer; }
+    /* RAD/DEG are one either-or pair; INV is an independent toggle, so it sits apart. */
+    .sci-mode-seg { flex: 2; display: flex; gap: 6px; }
+    .sci-inv-btn { flex: 1; margin-left: 14px; }
+    .sci-flags { display: flex; gap: 6px; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.06em; min-height: 1.4em; align-items: center; }
+    .sci-flag { border: 1px solid currentColor; border-radius: 5px; padding: 1px 5px; opacity: 0.6; }
     .sci-display { border-radius: 14px; border: 3px solid; padding: 10px 16px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: flex-end; min-height: 72px; }
     .sci-hist-line { font-size: 0.78rem; opacity: 0.5; font-weight: 600; min-height: 1em; text-align: right; }
     .sci-val { font-size: 1.8rem; font-weight: 800; text-align: right; word-break: break-all; }
@@ -126,7 +169,29 @@
     /* One list */
     .lst-bar { display: flex; align-items: center; gap: 6px; flex-shrink: 0; padding-bottom: 8px; }
     .lst-bar .ttl { flex: 1; min-width: 0; font-size: 1.05rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .lst-ico { border-radius: 10px; border: 2px solid; background: transparent; font-family: inherit; font-size: 1rem; font-weight: 800; padding: 7px 11px; cursor: pointer; flex-shrink: 0; min-height: 40px; }
+    /* Square, not 40x46: equal padding on both axes makes the three read as a set.
+       The tint overlay uses currentColor so it follows the theme without hardcoding. */
+    .lst-ico { position: relative; overflow: hidden; width: 42px; height: 42px; flex: 0 0 42px;
+      display: inline-flex; align-items: center; justify-content: center; padding: 0;
+      border-radius: 13px; border: 1.5px solid; background: transparent; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.13s ease, border-color 0.16s ease; }
+    .lst-ico::before { content: ''; position: absolute; inset: 0; background: currentColor;
+      opacity: 0; transition: opacity 0.16s ease; pointer-events: none; }
+    .lst-ico:hover::before, .lst-ico:focus-visible::before { opacity: 0.1; }
+    .lst-ico:active::before { opacity: 0.18; }
+    .lst-ico:active { transform: scale(0.92); }
+    .lst-ico:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+    .lst-ico svg { position: relative; width: 20px; height: 20px; display: block; }
+    /* Circles read optically larger than an arrow at the same box size. */
+    #lst-share svg { width: 18px; height: 18px; }
+    #lst-more svg  { width: 19px; height: 19px; }
+    /* Back is navigation; share and options act on the list — group them apart. */
+    .lst-actions { display: flex; gap: 6px; flex-shrink: 0; margin-left: 2px; }
+    @media (prefers-reduced-motion: reduce) {
+      .lst-ico, .lst-ico::before { transition: none; }
+      .lst-ico:active { transform: none; }
+    }
     .itm { border-radius: 12px; border: 2px solid; padding: 9px 12px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
     .itm .lb { flex: 1; min-width: 0; font-weight: 700; font-size: 0.95rem; word-break: break-word; text-align: left; background: none; border: none; font-family: inherit; padding: 2px 0; cursor: pointer; }
     .itm .am { font-weight: 800; font-size: 1.05rem; white-space: nowrap; font-variant-numeric: tabular-nums; background: none; border: none; font-family: inherit; padding: 2px 0; cursor: pointer; }
@@ -214,7 +279,7 @@
       <div class="pw-title">Unlock TalkCalc Pro</div>
       <div class="pw-sub">One-time purchase &mdash; no subscription, yours forever.</div>
       <ul class="pw-features" id="pw-features">
-        <li><span>&#128208;</span> Unit &amp; Currency Converter (30 currencies)</li>
+        <li><span>&#128208;</span> Unit &amp; Currency Converter (<span id="pw-fx-count">30</span> currencies)</li>
         <li><span>%</span> Percentage Helper &mdash; Tip, Tax &amp; more</li>
         <li><span>&#128300;</span> Full Scientific Calculator</li>
         <li><span>&#128203;</span> Lists &mdash; groceries, rent, bill split</li>
@@ -401,8 +466,46 @@
     }
 
     // ── Currency ──
-    const CURRENCIES = ['USD','EUR','GBP','JPY','AUD','CAD','CHF','CNY','IDR','INR','MYR','SGD','KRW','BRL','MXN','AED','SAR','TRY','ZAR','SEK','NOK','DKK','PLN','CZK','HUF','THB','PHP','VND','PKR','BDT'];
+    // These 31 are the "Common" group pinned to the top of the dropdown, and they
+    // double as the offline fallback: on a cold first run there are no rates yet,
+    // so deriving the list purely from the API would leave the picker empty.
+    const CURRENCIES = ['USD','EUR','GBP','JPY','AUD','NZD','CAD','CHF','CNY','IDR','INR','MYR','SGD','KRW','BRL','MXN','AED','SAR','TRY','ZAR','SEK','NOK','DKK','PLN','CZK','HUF','THB','PHP','VND','PKR','BDT'];
     let fxRates = null;
+
+    // Every code we can actually convert right now (~161 once rates land).
+    function fxAll() {
+      if (!fxRates) return CURRENCIES.slice();
+      const codes = Object.keys(fxRates).filter(c => /^[A-Z]{3}$/.test(c));
+      return codes.length ? codes : CURRENCIES.slice();
+    }
+    // Intl.DisplayNames gives localised currency names for free — no 160-entry blob
+    // to ship or maintain. Cached because building one per lookup is expensive.
+    let _fxNamer, _fxNames = {};
+    function fxName(code) {
+      if (code in _fxNames) return _fxNames[code];
+      let n = '';
+      try {
+        if (_fxNamer === undefined) _fxNamer = new Intl.DisplayNames([getDisplayLocale()], { type: 'currency' });
+        if (_fxNamer) { n = _fxNamer.of(code) || ''; if (n === code) n = ''; }
+      } catch (e) { _fxNamer = null; }
+      _fxNames[code] = n;
+      return n;
+    }
+    function fxOptionsHTML() {
+      const all = fxAll(), set = new Set(all);
+      const pinned = CURRENCIES.filter(c => set.has(c));
+      const rest   = all.filter(c => CURRENCIES.indexOf(c) === -1).sort();
+      // Codes only, so the select stays narrow next to the amount field. Full names
+      // are surfaced through the search box instead.
+      const opt = c => '<option value="' + c + '">' + c + '</option>';
+      let h = '<optgroup label="Common">' + pinned.map(opt).join('') + '</optgroup>';
+      if (rest.length) h += '<optgroup label="All currencies">' + rest.map(opt).join('') + '</optgroup>';
+      return h;
+    }
+    function updateFxCount() {
+      const el = document.getElementById('pw-fx-count');
+      if (el) el.textContent = fxAll().length;
+    }
     async function loadFX() {
       const cached = localStorage.getItem('tc_fx'), ts = localStorage.getItem('tc_fx_ts');
       if (cached && ts && Date.now() - +ts < 3600000) { fxRates = JSON.parse(cached); updateFxNote('Rates from cache'); return; }
@@ -415,6 +518,9 @@
     function convertFX(val, from, to) {
       if (!fxRates) return null;
       if (from === to) return parseFloat(val);
+      // An unknown code used to fall through as undefined and yield NaN, which the
+      // formatter then rendered as a plausible-looking number. Fail loudly instead.
+      if (!fxRates[from] || !fxRates[to]) return null;
       return parseFloat(val) / fxRates[from] * fxRates[to];
     }
     function fmtFX(n) {
@@ -439,7 +545,12 @@
     }
 
     // ── Scientific state ──
-    let sci = { val: '0', hist: '', prev: null, op: null, isRad: true, inv: false, _reset: false };
+    // stack  — parked {prev,op} frames, one per open "("
+    // tokens — history-line pieces for the expression being built
+    // valTok — sci.val is already represented at the tail of tokens (came from ")" or a function)
+    // opJust — a binary operator was the last key, so another one just swaps it
+    let sci = { val: '0', hist: '', prev: null, op: null, isRad: true, inv: false,
+                _reset: false, stack: [], tokens: [], valTok: false, opJust: false };
     function factorial(n) {
       if (n < 0 || !Number.isInteger(n)) return NaN;
       if (n === 0 || n === 1) return 1; if (n > 170) return Infinity;
@@ -474,7 +585,7 @@
       'No ads, no tracking'
     ];
     const FEAT_PRO = [
-      'Unit & currency converter (30 currencies)',
+      'Unit & currency converter (160+ currencies)',
       'Percentage helper \u2014 tip, tax, markup',
       'Full scientific calculator',
       'Lists \u2014 groceries, rent, bill split',
@@ -580,7 +691,7 @@
       patchVoice();
       patchHistoryCapture();
       bindListEvents();
-      wireConverter(); loadFX();
+      wireConverter(); loadFX(); wirePct();
       ecTab('calc');
       applyTheme();
       observeTheme();
@@ -766,13 +877,15 @@
         </div>
         <div class="converter-box" id="conv-box">
           <div id="curr-search-wrap" style="display:none">
-            <input class="currency-search" id="curr-search" placeholder="Search (USD, EUR, IDR…)" oninput="ecFxFilter()"/>
+            <input class="currency-search" id="curr-search" placeholder="Search (USD, EUR, NZD\u2026)" oninput="ecFxFilter()" autocapitalize="characters" autocomplete="off" spellcheck="false"/>
+            <div class="curr-search-msg" id="curr-search-msg" role="status" aria-live="polite" style="display:none"></div>
           </div>
           <div class="conv-row">
             <div class="conv-input-wrap"><input type="text" inputmode="decimal" id="conv-a" placeholder="0" oninput="ecConvCalc()"/></div>
             <select class="conv-unit-select" id="conv-a-unit" onchange="ecConvCalc()"></select>
           </div>
-          <div class="conv-swap">⇅</div>
+          <button type="button" class="conv-swap" id="conv-swap" onclick="ecConvSwap()"
+                  aria-label="Swap the two units" title="Swap units">\u21C5</button>
           <div class="conv-row">
             <div class="conv-input-wrap"><input type="text" inputmode="decimal" id="conv-b" placeholder="0" oninput="ecConvCalcRev()"/></div>
             <select class="conv-unit-select" id="conv-b-unit" onchange="ecConvCalc()"></select>
@@ -801,15 +914,26 @@
         : 'Type in either field';
       populateConvUnits(type);
       ecConvCalc();
-      if (type === 'currency') loadFX().then(ecConvCalc);
+      // The picker is first built from the 31-code fallback; once rates land the full
+      // ~161 are available, so rebuild it (populateConvUnits keeps the selection).
+      if (type === 'currency') loadFX().then(() => {
+        if (convType !== 'currency') return;
+        populateConvUnits('currency');
+        ecFxFilter();
+        ecConvCalc();
+      });
     };
     function populateConvUnits(type) {
       if (type === 'currency') {
+        const all = fxAll();
         ['conv-a-unit','conv-b-unit'].forEach((id,i) => {
           const sel = document.getElementById(id); if (!sel) return;
-          sel.innerHTML = CURRENCIES.map(c => `<option value="${c}">${c}</option>`).join('');
-          sel.value = i === 0 ? 'USD' : 'IDR';
-        }); return;
+          const keep = sel.value;                       // survive the rates-arrived rebuild
+          sel.innerHTML = fxOptionsHTML();
+          sel.value = all.indexOf(keep) !== -1 ? keep : (i === 0 ? 'USD' : 'IDR');
+        });
+        updateFxCount();
+        return;
       }
       const units = CONV[type].units;
       ['conv-a-unit','conv-b-unit'].forEach((id,i) => {
@@ -818,7 +942,12 @@
         sel.value = i === 0 ? units[0] : units[1];
       });
     }
-    function wireConverter() { ecConvType('length'); }
+    function wireConverter() {
+      // Keep the advertised count honest — it was hardcoded to 30 and drifted the
+      // moment a currency was added. Reads 31 offline, ~161 once rates load.
+      updateFxCount();
+      ecConvType('length');
+    }
 
     // ── Converter input grouping ──
     // Detect the active locale's separators rather than assuming "," and "."
@@ -892,6 +1021,31 @@
       }
     };
 
+    // Swap both the units and the amounts, so CAD 5 -> IDR 55,000 becomes
+    // IDR 55,000 -> CAD 5 rather than silently re-converting the wrong number.
+    let _swapFlip = false;
+    window.ecConvSwap = function() {
+      const aU = document.getElementById('conv-a-unit'), bU = document.getElementById('conv-b-unit');
+      const aV = document.getElementById('conv-a'),      bV = document.getElementById('conv-b');
+      if (!aU || !bU || !aV || !bV) return;
+
+      const u = aU.value; aU.value = bU.value; bU.value = u;
+      // "…" is the placeholder shown when a rate is missing, not a number — moving it
+      // into the editable field would leave unparseable text the user has to delete.
+      const clean = s => (s === '\u2026' ? '' : s);
+      const v = clean(aV.value); aV.value = clean(bV.value); bV.value = v;
+
+      // The search box writes into the TOP slot. Leaving "cad" in it after a swap
+      // would mislabel the row and snap CAD back on the next keystroke.
+      const box = document.getElementById('curr-search');
+      if (box && box.value) { box.value = ''; ecFxFilter(); }
+
+      const btn = document.getElementById('conv-swap');
+      if (btn) { _swapFlip = !_swapFlip; btn.classList.toggle('swapped', _swapFlip); }
+
+      ecConvCalc();
+    };
+
     window.ecConvCalcRev = function() {
       const inEl = document.getElementById('conv-b');
       if (inEl && inEl.value.trim()) trialUse('convert');
@@ -909,14 +1063,49 @@
       }
     };
 
+    // The search box SELECTS rather than filters. Filtering both dropdowns had two
+    // failure modes: a miss emptied them completely (leaving a stale result on screen
+    // that looked valid), and an exact single match left both lists holding only that
+    // one code, so the only possible conversion was X to X.
+    // With ~161 codes it also matches names, so "kiwi"-style browsing works: typing
+    // "new zealand" finds NZD without knowing the code.
     window.ecFxFilter = function() {
-      const q = document.getElementById('curr-search')?.value.toUpperCase().trim();
-      const list = q ? CURRENCIES.filter(c => c.includes(q)) : CURRENCIES;
-      ['conv-a-unit','conv-b-unit'].forEach(id => {
-        const sel = document.getElementById(id); if (!sel) return;
-        const cur = sel.value; sel.innerHTML = list.map(c => `<option value="${c}">${c}</option>`).join('');
-        if (list.includes(cur)) sel.value = cur;
-      });
+      const box = document.getElementById('curr-search');
+      const msg = document.getElementById('curr-search-msg');
+      const q = (box ? box.value : '').toUpperCase().trim();
+      const selA = document.getElementById('conv-a-unit');
+      const all = fxAll();
+
+      const show = (text, bad) => {
+        if (!msg) return;
+        msg.textContent = text || '';
+        msg.style.display = text ? '' : 'none';
+        const t = window.getTheme ? window.getTheme() : {};
+        msg.style.color = bad ? (t.clearBg || '#e05a5a') : (t.displayText || 'inherit');
+      };
+      const label = c => { const n = fxName(c); return n ? c + ' \u2014 ' + n : c; };
+
+      if (!q) { show(''); return; }
+
+      const exact   = all.indexOf(q) !== -1 ? q : null;
+      const byCode  = all.filter(c => c.indexOf(q) === 0);
+      // Name matching only kicks in at 3 chars — below that nearly every currency
+      // name contains the letter, so "N" would report 143 matches instead of 6 codes.
+      const byName  = q.length >= 3 ? all.filter(c => fxName(c).toUpperCase().indexOf(q) !== -1) : [];
+      const matches = [];
+      byCode.concat(byName).forEach(c => { if (matches.indexOf(c) === -1) matches.push(c); });
+      const hit = exact || (matches.length === 1 ? matches[0] : null);
+
+      if (hit) {
+        if (selA && selA.value !== hit) { selA.value = hit; ecConvCalc(); }
+        show(label(hit) + ' \u2713', false);
+      } else if (matches.length > 1) {
+        const head = matches.slice(0, 6).join(', ');
+        show(head + (matches.length > 6 ? ' \u2026 (' + matches.length + ' matches)' : ''), false);
+      } else {
+        show('No currency matches \u201C' + q + '\u201D. TalkCalc supports '
+             + all.length + ' currencies \u2014 tap a dropdown to see them all.', true);
+      }
     };
 
     // ── Percent ──
@@ -972,15 +1161,19 @@
     }
     function fmtPct(n) { return fmtConv(+n.toFixed(4)); }
     const PCT_FIELDS = { 1: ['p1x','p1y'], 2: ['p2b','p2p'], 3: ['p3x','p3y'] };
-    // Only offer Clear when there is something to clear
+    // Show Clear once there is anything to clear, and Save once there is a real result
+    // to save. Both toggle the same way so the row never holds a hole where a hidden
+    // button used to be.
     function pctToggleClear(n) {
-      const btn = document.getElementById('p' + n + 'c');
-      if (!btn) return;
-      const any = PCT_FIELDS[n].some(id => ((document.getElementById(id)?.value) || '') !== '');
-      btn.classList.toggle('show', any);
-      const sv = document.getElementById('p' + n + 's');
-      if (sv) sv.style.display = pctSaveInfo(n) ? '' : 'none';
+      const clr = document.getElementById('p' + n + 'c');
+      const sv  = document.getElementById('p' + n + 's');
+      const any = PCT_FIELDS[n].some(id => ((document.getElementById(id) || {}).value || '') !== '');
+      if (clr) clr.classList.toggle('show', any);
+      if (sv)  sv.classList.toggle('show', !!pctSaveInfo(n));
     }
+    // Run once at build time: these only ever fired from oninput, so on a fresh panel
+    // Save defaulted to visible with an empty Clear slot beside it.
+    function wirePct() { [1,2,3].forEach(pctToggleClear); }
     window.ecPctClear = function(n) {
       PCT_FIELDS[n].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
       ({ 1: ecP1, 2: ecP2, 3: ecP3 })[n]();
@@ -1012,11 +1205,14 @@
     function sciHTML() {
       return `
         <div class="sci-top-row">
-          <button class="sci-mode-btn" id="sci-rad" onclick="sciMode(true)">RAD</button>
-          <button class="sci-mode-btn" id="sci-deg" onclick="sciMode(false)">DEG</button>
-          <button class="sci-mode-btn" id="sci-inv" onclick="sciInv()">INV</button>
+          <div class="sci-mode-seg" role="group" aria-label="Angle unit">
+            <button class="sci-mode-btn" id="sci-rad" onclick="sciMode(true)" aria-pressed="true">RAD</button>
+            <button class="sci-mode-btn" id="sci-deg" onclick="sciMode(false)" aria-pressed="false">DEG</button>
+          </div>
+          <button class="sci-mode-btn sci-inv-btn" id="sci-inv" onclick="sciInv()" aria-pressed="false">INV</button>
         </div>
         <div class="sci-display" id="sci-disp" tabindex="0">
+          <div class="sci-flags" id="sci-flags"></div>
           <div class="sci-hist-line" id="sci-hl"></div>
           <div class="sci-val" id="sci-vl">0</div>
         </div>
@@ -1038,7 +1234,8 @@
             '5':'5','6':'6','7':'7','8':'8','9':'9',
             '.':'.','Enter':'=','Backspace':'\u232B',
             'Escape':'C','+':'+','-':'-',
-            '*':'\u00D7','/':'\u00F7','%':'%'
+            '*':'\u00D7','/':'\u00F7','%':'%',
+            '(':'(',')':')','=':'^'
           };
           const key = map[e.key];
           if (key) { e.preventDefault(); sciPress(key); }
@@ -1046,9 +1243,11 @@
       }
       const t = window.getTheme ? window.getTheme() : {};
       const inv = sci.inv;
+      // Each INV key is the true inverse of the key in the same slot below.
+      // x! is the one exception — factorials have no elementary inverse, so it stays put.
       const rows = inv ? [
-        ['sin\u207B\u00B9','cos\u207B\u00B9','tan\u207B\u00B9','log\u2082','10\u02E3'],
-        ['e\u02E3','x!','\u221Ax','x\u00B2','x\u207F'],
+        ['sin\u207B\u00B9','cos\u207B\u00B9','tan\u207B\u00B9','10\u02E3','e\u02E3'],
+        ['ln','x!','x\u00B2','\u221Ax','\u207F\u221Ax'],
         ['\u03C0','e','(',')', 'C'],
         ['7','8','9','\u00F7','\u232B'],
         ['4','5','6','\u00D7','%'],
@@ -1064,7 +1263,7 @@
         ['\u00B1','0','.', '+','='],
       ];
       const opSet = new Set(['\u00F7','\u00D7','+','-']);
-      const fnSet = new Set(['sin','cos','tan','log','ln','sin\u207B\u00B9','cos\u207B\u00B9','tan\u207B\u00B9','log\u2082','10\u02E3','e\u02E3','x!','\u221Ax','x\u00B2','x\u207F','\u03C0','e','(',')','+/-','1/x','%']);
+      const fnSet = new Set(['sin','cos','tan','log','ln','sin\u207B\u00B9','cos\u207B\u00B9','tan\u207B\u00B9','log\u2082','10\u02E3','e\u02E3','x!','\u221Ax','\u207F\u221Ax','x\u00B2','x\u207F','\u03C0','e','(',')','+/-','1/x','%']);
       grid.innerHTML = rows.map(row => `<div class="sci-row">${row.map(lb => {
         let bg=t.btnBg, fg=t.btnText, br=t.btnBorder;
         if (lb==='=')                     { bg=t.equalsBg;   fg=t.equalsText;   br=t.equalsBg;   }
@@ -1082,11 +1281,13 @@
         });
       }
       const radB=document.getElementById('sci-rad'), degB=document.getElementById('sci-deg'), invB=document.getElementById('sci-inv');
-      if (radB) { radB.style.background=sci.isRad?t.operatorBg:t.btnBg; radB.style.color=sci.isRad?t.operatorText:t.btnText; radB.style.borderColor=sci.isRad?t.operatorBg:t.btnBorder; }
-      if (degB) { degB.style.background=!sci.isRad?t.operatorBg:t.btnBg; degB.style.color=!sci.isRad?t.operatorText:t.btnText; degB.style.borderColor=!sci.isRad?t.operatorBg:t.btnBorder; }
-      if (invB) { invB.style.background=sci.inv?t.equalsBg:t.btnBg; invB.style.color=sci.inv?t.equalsText:t.btnText; invB.style.borderColor=sci.inv?t.equalsBg:t.btnBorder; }
+      if (radB) { radB.style.background=sci.isRad?t.operatorBg:t.btnBg; radB.style.color=sci.isRad?t.operatorText:t.btnText; radB.style.borderColor=sci.isRad?t.operatorBg:t.btnBorder; radB.setAttribute('aria-pressed', String(sci.isRad)); }
+      if (degB) { degB.style.background=!sci.isRad?t.operatorBg:t.btnBg; degB.style.color=!sci.isRad?t.operatorText:t.btnText; degB.style.borderColor=!sci.isRad?t.operatorBg:t.btnBorder; degB.setAttribute('aria-pressed', String(!sci.isRad)); }
+      if (invB) { invB.style.background=sci.inv?t.equalsBg:t.btnBg; invB.style.color=sci.inv?t.equalsText:t.btnText; invB.style.borderColor=sci.inv?t.equalsBg:t.btnBorder; invB.setAttribute('aria-pressed', String(sci.inv)); }
       if(sciDispEl){sciDispEl.style.background=t.displayBg;sciDispEl.style.borderColor=t.btnBorder;}
       const vl=document.getElementById('sci-vl'); if(vl) vl.style.color=t.displayText;
+      const fl=document.getElementById('sci-flags'); if(fl) fl.style.color=t.displayText;
+      window.sciRefreshFlags();
     }
 
     // Format the science display without touching sci.val (which must stay raw for parseFloat)
@@ -1109,55 +1310,186 @@
     function fmtSciHist(h) {
       return String(h || '').replace(/-?\d+\.?\d*/g, m => fmtSci(m));
     }
+    // Angle unit, inverse state and unclosed-paren depth, so none of it is invisible.
+    // Independent flags, drawn as separate pills — "DEG" and "INV" are two unrelated
+    // switches, not one compound mode, and joining them with a separator hid that.
+    window.sciRefreshFlags = function() {
+      const fl = document.getElementById('sci-flags'); if (!fl) return;
+      fl.textContent = '';
+      const add = (txt, label) => {
+        const s = document.createElement('span');
+        s.className = 'sci-flag'; s.textContent = txt;
+        if (label) s.setAttribute('aria-label', label);
+        fl.appendChild(s);
+      };
+      add(sci.isRad ? 'RAD' : 'DEG', sci.isRad ? 'Angle unit: radians' : 'Angle unit: degrees');
+      if (sci.inv) add('INV', 'Inverse functions on');
+      if (sci.stack.length) add('('.repeat(sci.stack.length), sci.stack.length + ' unclosed bracket(s)');
+    };
     window.sciRefreshDisplay = function() {
       const vl = document.getElementById('sci-vl'), hl = document.getElementById('sci-hl');
       if (vl) vl.textContent = fmtSci(sci.val);
       if (hl) hl.textContent = fmtSciHist(sci.hist);
+      window.sciRefreshFlags();
     };
+
+    // ── Evaluation helpers ────────────────────────────────────────────────
+    // sci.val is ALWAYS a bare number string ("12.5", "-3", "Error"). Parens are
+    // never written into it — "(" parks the pending {prev,op} on a stack and ")"
+    // folds the frame back down to a single number. That is what makes the parens
+    // actually affect the result, and it also makes "0(" impossible to display.
+    const SCI_BINOPS = ['\u00F7', '\u00D7', '+', '-', '^', '\u221A'];
+    // Button labels that behave as binary operators, mapped to their internal op.
+    const SCI_OPKEY  = { 'x\u207F': '^', '\u207F\u221Ax': '\u221A' };
+    // How an internal op is drawn on the history line.
+    const SCI_OPTOK  = { '\u221A': '\u207F\u221A' };
+    function sciOpTok(op) { return SCI_OPTOK[op] || op; }
+    function sciApply(op, a, b) {
+      switch (op) {
+        case '+':        return a + b;
+        case '-':        return a - b;
+        case '\u00D7':   return a * b;
+        case '\u00F7':   return b === 0 ? NaN : a / b;
+        case '^':        return Math.pow(a, b);
+        case '\u221A':   return b === 0 ? NaN : Math.pow(a, 1 / b);  // b-th root of a
+        default:         return b;
+      }
+    }
+    // Collapse the pending "prev op _" of the current frame against cur.
+    function sciFold(cur) { return (sci.op && sci.prev !== null) ? sciApply(sci.op, sci.prev, cur) : cur; }
+    // Infinity is as unusable as NaN on a display, so both surface as Error.
+    function sciNum(x)    { return (x === null || !isFinite(x)) ? 'Error' : String(+Number(x).toFixed(10)); }
+
+    // ── History-line tokens ──
+    function sciExpr(tk) { return tk.join(' ').replace(/\(\s+/g, '(').replace(/\s+\)/g, ')'); }
+    function sciPushOperand() {
+      if (sci.valTok) { sci.valTok = false; return; }  // already at the tail of tokens
+      sci.tokens.push(sci.val);
+    }
+    // Pull the trailing operand back off the token list so a function can wrap it.
+    function sciTakeOperand() {
+      if (!sci.valTok) return sci.val;
+      sci.valTok = false;
+      if (sci.tokens[sci.tokens.length - 1] !== ')') return sci.tokens.pop() || sci.val;
+      let depth = 0; const out = [];
+      while (sci.tokens.length) {
+        const tk = sci.tokens.pop(); out.unshift(tk);
+        if (tk === ')') depth++;
+        else if (tk === '(') { depth--; if (depth === 0) break; }
+      }
+      // The caller re-brackets, so hand back the bare inside: √(4 + 5), not √((4 + 5)).
+      if (out[0] === '(' && out[out.length-1] === ')') out.splice(0,1), out.pop();
+      return sciExpr(out);
+    }
+    // Record a function application, e.g. sin(30), so the history line stays truthful.
+    function sciNote(wrap) { sci.tokens.push(wrap(sciTakeOperand())); sci.valTok = true; }
+    function sciHistLine() {
+      if (!sci.tokens.length) return '';                 // nothing in progress yet
+      const tk = sci.tokens.slice();
+      if (!sci.valTok && !sci._reset) tk.push(sci.val);  // the operand still being typed
+      return sciExpr(tk);
+    }
 
     window.sciPress = function(lb) {
       trialUse('sci');
-      const toRad = v => sci.isRad ? v : v * Math.PI / 180;
-      const n = parseFloat(sci.val); let result = null;
-      if (lb.length===1 && lb>='0' && lb<='9')     { if (sci._reset) { sci.val=lb; sci._reset=false; } else sci.val = sci.val==='0' ? lb : sci.val+lb; }
-      else if (lb==='.')                           { if (sci._reset) { sci.val='0.'; sci._reset=false; } else if (!sci.val.includes('.')) sci.val+='.'; }
-      else if (lb==='\u232B')                      { sci.val = sci.val.length>1 ? sci.val.slice(0,-1) : '0'; }
-      else if (lb==='C')                           { sci.val='0'; sci.hist=''; sci.prev=null; sci.op=null; sci._reset=false; }
-      else if (lb==='\u00B1')                      { sci.val = sci.val.startsWith('-') ? sci.val.slice(1) : '-'+sci.val; }
-      else if (lb==='('||lb===')')                 { sci.val += lb; }
-      else if (['\u00F7','\u00D7','+','-'].includes(lb)) {
-        if (sci.prev!==null && sci.op && !sci._reset) {
-          const ops = {'+':()=>sci.prev+n,'-':()=>sci.prev-n,'\u00D7':()=>sci.prev*n,'\u00F7':()=>n===0?NaN:sci.prev/n};
-          result = ops[sci.op]();
-        } else sci.prev = n;
-        sci.hist=(result!==null?result:n)+' '+lb; sci.op=lb; sci._reset=true; if(result!==null) sci.prev=result;
+      const toRad   = v => sci.isRad ? v : v * Math.PI / 180;
+      const fromRad = v => sci.isRad ? v : v * 180 / Math.PI;
+      const n = parseFloat(sci.val);
+      let result = null, histLocked = false, wasOpJust = sci.opJust;
+      sci.opJust = false;
+
+      if (lb.length===1 && lb>='0' && lb<='9') {
+        if (sci._reset) { sci.val=lb; sci._reset=false; sci.valTok=false; }
+        else sci.val = sci.val==='0' ? lb : sci.val+lb;
       }
-      else if (lb==='=' && sci.op && sci.prev!==null) {
-        const ops = {'+':()=>sci.prev+n,'-':()=>sci.prev-n,'\u00D7':()=>sci.prev*n,'\u00F7':()=>n===0?NaN:sci.prev/n,'^':()=>Math.pow(sci.prev,n)};
-        result = ops[sci.op] ? ops[sci.op]() : n;
-        sci.hist=sci.prev+' '+sci.op+' '+n+' ='; sci.prev=null; sci.op=null; sci._reset=false;
-        addHist(sci.hist.replace(' =',''), isNaN(result)?'Error':+result.toFixed(10)+'');
+      else if (lb==='.') {
+        if (sci._reset) { sci.val='0.'; sci._reset=false; sci.valTok=false; }
+        else if (!sci.val.includes('.')) sci.val+='.';
       }
-      else if (lb==='x\u207F') { sci.hist=n+' ^'; sci.op='^'; sci.prev=n; sci._reset=true; }
-      else if (lb==='%')       { result=n/100; }
-      else if (lb==='1/x')     { result=n===0?NaN:1/n; }
-      else if (lb==='x\u00B2') { result=n*n; }
-      else if (lb==='\u221Ax') { result=Math.sqrt(n); }
-      else if (lb==='x!')      { result=factorial(n); }
-      else if (lb==='\u03C0')  { result=Math.PI; }
-      else if (lb==='e')       { result=Math.E; }
-      else if (lb==='e\u02E3') { result=Math.exp(n); }
-      else if (lb==='10\u02E3'){ result=Math.pow(10,n); }
-      else if (lb==='log')     { result=Math.log10(n); }
-      else if (lb==='ln')      { result=Math.log(n); }
-      else if (lb==='log\u2082'){ result=Math.log2(n); }
-      else if (lb==='sin')     { result=Math.sin(toRad(n)); }
-      else if (lb==='cos')     { result=Math.cos(toRad(n)); }
-      else if (lb==='tan')     { result=Math.tan(toRad(n)); }
-      else if (lb==='sin\u207B\u00B9') { result=sci.isRad?Math.asin(n):Math.asin(n)*180/Math.PI; }
-      else if (lb==='cos\u207B\u00B9') { result=sci.isRad?Math.acos(n):Math.acos(n)*180/Math.PI; }
-      else if (lb==='tan\u207B\u00B9') { result=sci.isRad?Math.atan(n):Math.atan(n)*180/Math.PI; }
-      if (result!==null) { sci.val=isNaN(result)?'Error':+result.toFixed(10)+''; sci._reset=true; }
+      else if (lb==='\u232B') {
+        // A result or a closed group isn't editable digit-by-digit — clear it instead.
+        if (sci._reset || sci.valTok) { sci.val='0'; sci._reset=false; sci.valTok=false; }
+        else sci.val = sci.val.length>1 ? sci.val.slice(0,-1) : '0';
+      }
+      else if (lb==='C') {
+        sci.val='0'; sci.hist=''; sci.prev=null; sci.op=null; sci._reset=false;
+        sci.stack=[]; sci.tokens=[]; sci.valTok=false; histLocked=true;
+      }
+      else if (lb==='\u00B1') {
+        sci.val = sci.val.startsWith('-') ? sci.val.slice(1) : '-'+sci.val;
+        if (sci.valTok) { sci.tokens[sci.tokens.length-1] = sci.val; }
+      }
+
+      // "(" opens a frame. Whatever operator was pending waits on the stack.
+      else if (lb==='(') {
+        sci.stack.push({ prev: sci.prev, op: sci.op });
+        sci.prev=null; sci.op=null; sci.val='0'; sci._reset=true; sci.valTok=false;
+        sci.tokens.push('(');
+      }
+      // ")" folds the frame to one number, so sci.val stays purely numeric.
+      else if (lb===')') {
+        if (sci.stack.length) {
+          sciPushOperand(); sci.tokens.push(')');
+          const inner = sciFold(n);
+          const f = sci.stack.pop();
+          sci.prev=f.prev; sci.op=f.op;
+          sci.val=sciNum(inner); sci._reset=true; sci.valTok=true;
+        }
+        // No matching "(" — ignore the key rather than corrupt the display.
+      }
+
+      else if (SCI_BINOPS.includes(lb) || SCI_OPKEY[lb]) {
+        const op = SCI_OPKEY[lb] || lb;
+        if (wasOpJust) { sci.tokens[sci.tokens.length-1] = sciOpTok(op); sci.op = op; }   // operator swap
+        else {
+          sciPushOperand(); sci.tokens.push(sciOpTok(op));
+          if (sci.op && sci.prev!==null) { sci.prev = sciApply(sci.op, sci.prev, n); sci.val = sciNum(sci.prev); }
+          else sci.prev = n;
+          sci.op = op;
+        }
+        sci._reset=true; sci.valTok=false; sci.opJust=true;
+      }
+
+      else if (lb==='=') {
+        sciPushOperand();
+        let cur = sciFold(n);
+        while (sci.stack.length) {                 // auto-close anything left open
+          sci.tokens.push(')');
+          const f = sci.stack.pop();
+          sci.prev=f.prev; sci.op=f.op;
+          cur = sciFold(cur);
+        }
+        const expr = sciExpr(sci.tokens);
+        sci.val = sciNum(cur);
+        sci.hist = expr + ' ='; histLocked = true;
+        sci.tokens=[]; sci.prev=null; sci.op=null; sci._reset=true; sci.valTok=false;
+        if (expr) addHist(expr, sci.val);
+      }
+
+      else if (lb==='%')       { sciNote(a=>'('+a+')%');   result=n/100; }
+      else if (lb==='1/x')     { sciNote(a=>'1/('+a+')');  result=n===0?NaN:1/n; }
+      else if (lb==='x\u00B2') { sciNote(a=>'('+a+')\u00B2'); result=n*n; }
+      else if (lb==='\u221Ax') { sciNote(a=>'\u221A('+a+')'); result=Math.sqrt(n); }
+      else if (lb==='x!')      { sciNote(a=>'('+a+')!');   result=factorial(n); }
+      else if (lb==='\u03C0')  { sci.tokens.push('\u03C0'); sci.valTok=true; result=Math.PI; }
+      else if (lb==='e')       { sci.tokens.push('e');      sci.valTok=true; result=Math.E; }
+      else if (lb==='e\u02E3') { sciNote(a=>'e^('+a+')');   result=Math.exp(n); }
+      else if (lb==='10\u02E3'){ sciNote(a=>'10^('+a+')');  result=Math.pow(10,n); }
+      else if (lb==='log')     { sciNote(a=>'log('+a+')');  result=Math.log10(n); }
+      else if (lb==='ln')      { sciNote(a=>'ln('+a+')');   result=Math.log(n); }
+      else if (lb==='log\u2082'){ sciNote(a=>'log\u2082('+a+')'); result=Math.log2(n); }
+      else if (lb==='sin')     { sciNote(a=>'sin('+a+')');  result=Math.sin(toRad(n)); }
+      else if (lb==='cos')     { sciNote(a=>'cos('+a+')');  result=Math.cos(toRad(n)); }
+      else if (lb==='tan')     { sciNote(a=>'tan('+a+')');  result=Math.tan(toRad(n)); }
+      else if (lb==='sin\u207B\u00B9') { sciNote(a=>'asin('+a+')'); result=fromRad(Math.asin(n)); }
+      else if (lb==='cos\u207B\u00B9') { sciNote(a=>'acos('+a+')'); result=fromRad(Math.acos(n)); }
+      else if (lb==='tan\u207B\u00B9') { sciNote(a=>'atan('+a+')'); result=fromRad(Math.atan(n)); }
+
+      if (result!==null) {
+        sci.val = sciNum(result); sci._reset=true;
+        if (sci.val==='Error') { sci.tokens=[]; sci.stack=[]; sci.prev=null; sci.op=null; sci.valTok=false; }
+      }
+      if (!histLocked) sci.hist = sciHistLine();
       window.sciRefreshDisplay();
     };
 
@@ -1473,12 +1805,29 @@
     let appCurrency = detectCurrency();
     try {
       const remembered = localStorage.getItem(LASTCUR_KEY);
-      if (remembered && CURRENCIES.indexOf(remembered) !== -1) appCurrency = remembered;
+      // Validate the shape, not membership of the common list. Checking against
+      // CURRENCIES meant picking anything outside those 31 was silently forgotten
+      // on the next launch.
+      if (remembered && /^[A-Z]{3}$/.test(remembered)) appCurrency = remembered;
     } catch (e) {}
+
+    // Most-recently-picked currencies, newest first. People transact in one or two,
+    // so this is what keeps the picker short no matter how many exist.
+    const CURHIST_KEY = 'tc_cur_hist';
+    let curHistory = [];
+    try {
+      const raw = JSON.parse(localStorage.getItem(CURHIST_KEY) || '[]');
+      if (Array.isArray(raw)) curHistory = raw.filter(c => /^[A-Z]{3}$/.test(c)).slice(0, 6);
+    } catch (e) {}
+
     function rememberCurrency(code) {
       if (!code) return;
       appCurrency = code;
-      try { localStorage.setItem(LASTCUR_KEY, code); } catch (e) {}
+      curHistory = [code].concat(curHistory.filter(c => c !== code)).slice(0, 6);
+      try {
+        localStorage.setItem(LASTCUR_KEY, code);
+        localStorage.setItem(CURHIST_KEY, JSON.stringify(curHistory));
+      } catch (e) {}
     }
 
     function fmtMoney(n, cur) {
@@ -1507,6 +1856,16 @@
     // Currencies normally written without decimal places
     const NO_DECIMAL_CUR = { IDR:1, JPY:1, KRW:1, VND:1, CLP:1, ISK:1, HUF:1 };
 
+    // Icons come from window.TC_ICON in app.js so the back arrow here and the one in
+    // the settings header stay identical. Read defensively: this is a cache-first PWA,
+    // so a stale service-worker entry can pair a new index.html with an old app.js.
+    // Without the fallback that mismatch throws at the top level of this script and
+    // takes the entire app down, rather than just degrading one icon.
+    const _ICONS = window.TC_ICON || {};
+    const ICO_BACK  = _ICONS.back  || '\u2190';
+    const ICO_SHARE = _ICONS.share || '\u2197';
+    const ICO_MORE  = _ICONS.more  || '\u22EF';
+
     function notesHTML() {
       return `
         <div id="lst-overview" style="display:flex;flex-direction:column;flex:1;min-height:0;gap:8px">
@@ -1517,10 +1876,12 @@
         </div>
         <div id="lst-detail" style="display:none;flex-direction:column;flex:1;min-height:0">
           <div class="lst-bar">
-            <button class="lst-ico" id="lst-back" aria-label="Back to lists">\u2190</button>
+            <button class="lst-ico" id="lst-back" aria-label="Back to lists">${ICO_BACK}</button>
             <div class="ttl" id="lst-title">List</div>
-            <button class="lst-ico" id="lst-share" aria-label="Share this list">\u2197</button>
-            <button class="lst-ico" id="lst-more" aria-label="List options">\u22EF</button>
+            <div class="lst-actions">
+              <button class="lst-ico" id="lst-share" aria-label="Share this list">${ICO_SHARE}</button>
+              <button class="lst-ico" id="lst-more" aria-label="List options">${ICO_MORE}</button>
+            </div>
           </div>
           <div class="notes-list" id="lst-items"></div>
           <div class="recent" id="lst-recent"></div>
@@ -1696,6 +2057,47 @@
       lb.value = ''; am.value = ''; lb.focus();
     };
 
+    // Two tiers rather than one flat list. The converter needs the long tail because
+    // you convert *from* whatever you happen to encounter; a list's currency is the
+    // one you actually transact in, so a short relevant set is right almost always —
+    // but "almost" was doing too much work when the other 130 were unreachable.
+    // Tier 1 is this list's currency, then recent picks, then the common set.
+    // Tier 2 is everything, alphabetical, one tap away.
+    function openCurrencySheet(l, showAll) {
+      const all = fxAll();
+      let codes;
+      if (showAll) {
+        codes = all.slice().sort();
+      } else {
+        codes = [];
+        const push = c => { if (c && codes.indexOf(c) === -1) codes.push(c); };
+        push(l.cur); push(appCurrency); curHistory.forEach(push); CURRENCIES.forEach(push);
+      }
+      const rows = codes.map(c => {
+        const nm = fxName(c);
+        return {
+          icon: c === l.cur ? '\u2713' : ' ',
+          // The sample amount stays: it shows the actual formatting, which differs a
+          // lot (JPY has no decimals, EUR puts the symbol last, CHF groups with ').
+          text: c + '  ' + fmtMoney(1000, c) + (nm ? '  \u00B7  ' + nm : ''),
+          onPick: () => { l.cur = c; rememberCurrency(c); saveLists(); renderNotes(); }
+        };
+      });
+      if (!showAll && all.length > codes.length) {
+        rows.push({
+          icon: '\u{1F50D}',
+          text: 'Show all ' + all.length + ' currencies\u2026',
+          onPick: () => openCurrencySheet(l, true)
+        });
+      }
+      openSheet({
+        title: 'Currency',
+        sub: showAll ? 'Applies to this list only.'
+                     : 'Applies to this list only. Your recent picks come first.',
+        rows: rows
+      });
+    }
+
     function shareList() {
       const l = listById(openList); if (!l) return;
       const lines = [l.name, ''];
@@ -1767,7 +2169,11 @@
         const edit = e.target.closest('[data-edit]');
         if (edit) { ecListEditItem(+edit.dataset.edit); return; }
 
-        const id = e.target.id;
+        // Resolve to the enclosing button. These controls now contain an <svg>, so a
+        // tap lands on the <path> or <circle> child, whose id is empty — reading
+        // e.target.id directly silently broke Back, Share and every other button here.
+        const hitBtn = e.target.closest('button');
+        const id = hitBtn ? hitBtn.id : e.target.id;
         if (id === 'lst-back')  { openList = null; renderNotes(); }
         else if (id === 'lst-new')   { ecListNew(); }
         else if (id === 'li-add')    { ecListAdd(); }
@@ -1849,15 +2255,7 @@
                 l.name = n; saveLists(); renderNotes();
               }}
             }) },
-          { icon: '\u{1F4B1}', text: 'Currency \u00B7 ' + l.cur, onPick: () => openSheet({
-              title: 'Currency',
-              sub: 'Applies to this list only.',
-              rows: CURRENCIES.map(c => ({
-                icon: c === l.cur ? '\u2713' : ' ',
-                text: c + '  ' + fmtMoney(1000, c),
-                onPick: () => { l.cur = c; rememberCurrency(c); saveLists(); renderNotes(); }
-              }))
-            }) },
+          { icon: '\u{1F4B1}', text: 'Currency \u00B7 ' + l.cur, onPick: () => openCurrencySheet(l, false) },
           { icon: '\u{1F465}', text: 'Split between people', onPick: () => openSheet({
               title: 'Split between',
               sub: 'The total is divided evenly and shown per person.',
@@ -2146,6 +2544,8 @@
         el.style.borderColor=t.btnBorder; el.style.color=t.btnText;
         el.style.background=el.classList.contains('converter-box')||el.classList.contains('conv-input-wrap')?t.displayBg:'transparent';
       });
+      const swapBtn = document.getElementById('conv-swap');
+      if (swapBtn) swapBtn.style.color = t.btnText;
       // Set colour on the inputs, not just their wrappers: an <input> does not
       // inherit colour by default, so on dark themes the text stayed browser-black.
       document.querySelectorAll('.conv-input-wrap input,.pct-input-wrap input,.currency-search,.lst-add input')
