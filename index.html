@@ -80,14 +80,27 @@
     .pro-panel.active { display: flex; }
     .conv-type-row { display: flex; gap: 8px; flex-shrink: 0; }
     .conv-type-btn { flex: 1; padding: 11px 4px; border-radius: 14px; border: 3px solid; font-weight: 700; font-family: inherit; font-size: 0.88rem; cursor: pointer; }
-    .converter-box { border-radius: 18px; border: 3px solid; padding: 14px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
-    .conv-row { display: flex; gap: 8px; align-items: center; }
-    .conv-input-wrap { flex: 1; border-radius: 12px; border: 3px solid; display: flex; align-items: center; overflow: hidden; min-width: 0; }
+    /* Two columns: the amount fields, and the unit selects. The swap button lives in
+       column 1 only, so it centres on the input fields rather than on the whole box.
+       Centring it on the box put it ~50px right of the fields' midpoint, because the
+       box is wider than the inputs by the select plus the gap. Grid also means the
+       alignment holds when the selects resize between Length, Weight and Currency. */
+    .converter-box { border-radius: 18px; border: 3px solid; padding: 14px;
+      display: grid; grid-template-columns: 1fr auto; column-gap: 8px; row-gap: 10px;
+      align-items: center; flex-shrink: 0; }
+    #curr-search-wrap { grid-column: 1 / -1; }
+    /* Every grid item needs an explicit column. Pinning only the swap button left
+       column 2 of its row empty, and grid auto-placement pulled the next item — the
+       second amount field — up into that hole, shunting everything after it by one
+       cell. With all columns declared, the swap simply owns a row of its own. */
+    .conv-input-wrap { grid-column: 1; flex: 1; border-radius: 12px; border: 3px solid; display: flex; align-items: center; overflow: hidden; min-width: 0; }
     .conv-input-wrap input { flex: 1; border: none; outline: none; background: transparent; color: inherit; font-weight: 700; font-size: 1.2rem; font-family: inherit; padding: 10px 12px; min-width: 0; }
-    .conv-unit-select { border-radius: 10px; border: 3px solid; font-weight: 700; font-family: inherit; font-size: 0.9rem; padding: 8px 10px; cursor: pointer; background: transparent; min-width: 76px; flex-shrink: 0; }
+    .conv-unit-select { grid-column: 2; border-radius: 10px; border: 3px solid; font-weight: 700; font-family: inherit; font-size: 0.9rem; padding: 8px 10px; cursor: pointer; background: transparent; min-width: 76px; flex-shrink: 0; }
     /* A real button now, not a glyph: needs an explicit touch target (44px is the
        minimum comfortable tap size) and colour inheritance, which buttons don't do. */
-    .conv-swap { display: block; margin: 0 auto; background: transparent; border: none;
+    .conv-swap { grid-column: 1; justify-self: center; display: inline-flex;
+      align-items: center; justify-content: center;
+      background: transparent; border: none;
       font-family: inherit; font-size: 1.4rem; font-weight: 800; line-height: 1;
       opacity: 0.45; text-align: center; cursor: pointer; color: inherit;
       min-height: 44px; min-width: 64px; padding: 6px 18px; border-radius: 12px;
@@ -880,16 +893,12 @@
             <input class="currency-search" id="curr-search" placeholder="Search (USD, EUR, NZD\u2026)" oninput="ecFxFilter()" autocapitalize="characters" autocomplete="off" spellcheck="false"/>
             <div class="curr-search-msg" id="curr-search-msg" role="status" aria-live="polite" style="display:none"></div>
           </div>
-          <div class="conv-row">
-            <div class="conv-input-wrap"><input type="text" inputmode="decimal" id="conv-a" placeholder="0" oninput="ecConvCalc()"/></div>
-            <select class="conv-unit-select" id="conv-a-unit" onchange="ecConvCalc()"></select>
-          </div>
+          <div class="conv-input-wrap"><input type="text" inputmode="decimal" id="conv-a" placeholder="0" oninput="ecConvCalc()"/></div>
+          <select class="conv-unit-select" id="conv-a-unit" onchange="ecConvCalc()"></select>
           <button type="button" class="conv-swap" id="conv-swap" onclick="ecConvSwap()"
                   aria-label="Swap the two units" title="Swap units">\u21C5</button>
-          <div class="conv-row">
-            <div class="conv-input-wrap"><input type="text" inputmode="decimal" id="conv-b" placeholder="0" oninput="ecConvCalcRev()"/></div>
-            <select class="conv-unit-select" id="conv-b-unit" onchange="ecConvCalc()"></select>
-          </div>
+          <div class="conv-input-wrap"><input type="text" inputmode="decimal" id="conv-b" placeholder="0" oninput="ecConvCalcRev()"/></div>
+          <select class="conv-unit-select" id="conv-b-unit" onchange="ecConvCalc()"></select>
         </div>
         <div class="fx-note" id="fx-note">Loading rates…</div>
         <div style="display:flex;align-items:center;gap:8px;justify-content:center">
