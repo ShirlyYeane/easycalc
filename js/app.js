@@ -794,7 +794,13 @@ document.addEventListener("keydown", (e) => {
 initSpeechRecognition();
 render();
 
-// Service worker disabled during development
-// if ("serviceWorker" in navigator) {
-//   navigator.serviceWorker.register("/sw.js").catch(() => { });
-// }
+// Register the service worker. The path MUST be relative: this app is served from
+// https://<user>.github.io/easycalc/, so "/sw.js" points at the domain root, 404s,
+// and registration silently fails — taking offline support with it. A worker at
+// /easycalc/sw.js also cannot claim scope "/", so "./" is the only valid scope.
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js", { scope: "./" })
+      .catch(err => console.warn("Service worker registration failed:", err));
+  });
+}
