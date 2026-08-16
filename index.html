@@ -5,6 +5,34 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#0B1929">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <script>
+    // Paint the saved theme onto <html> BEFORE anything else renders.
+    // Without this, the TWA splash fades out onto a bare <body> (white) and stays
+    // white until app.js runs render() and injects #app's markup — a bright flash
+    // between the blue splash and the dark calculator. Kept in <head> and inline
+    // on purpose: an external file would be one more round-trip before first paint.
+    (function () {
+      var BG = {
+        midnight: ['#0B1929', '#0D2137'],
+        rosewood: ['#1A0A14', '#1F0E19'],
+        forest:   ['#0A1F12', '#0D2415'],
+        lavender: ['#F5F0FF', '#EDE5FF'],
+        highContrast: ['#000000', '#1a1a1a']
+      };
+      var key = 'midnight';
+      try {
+        var saved = JSON.parse(localStorage.getItem('easycalc_prefs'));
+        if (saved && BG[saved.themeKey]) key = saved.themeKey;
+      } catch (e) { }
+      var c = BG[key];
+      document.documentElement.style.background = c[0];
+      // Match the status bar to the header now, not after render(), so it doesn't
+      // step through a third colour on the way in.
+      var m = document.querySelector('meta[name="theme-color"]');
+      if (m) m.content = c[1];
+    })();
+  </script>
   <meta name="description"
     content="TalkCalc - Accessible calculator for everyone. Voice input, large buttons, high contrast themes.">
   <meta name="mobile-web-app-capable" content="yes">
@@ -30,6 +58,9 @@
       height: 100%;
       width: 100%;
       overflow: hidden;
+      /* Inherit the colour the head script set, so the gap between splash
+         fade-out and first render is the app's own background, not white. */
+      background: inherit;
       font-family: 'Atkinson Hyperlegible', 'Verdana', sans-serif;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
