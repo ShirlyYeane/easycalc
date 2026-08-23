@@ -1760,7 +1760,7 @@
       <div class="pw-title">Unlock TalkCalc Pro</div>
       <div class="pw-sub">One-time purchase &mdash; no subscription, yours forever.</div>
       <ul class="pw-features" id="pw-features">
-        <li><span>&#128208;</span> Unit &amp; Currency Converter (<span id="pw-fx-count">30</span> currencies)</li>
+        <li><span>&#128208;</span> Unit &amp; Currency Converter (<span id="pw-fx-count">31</span> currencies)</li>
         <li><span>%</span> Percentage Helper &mdash; Tip, Tax &amp; more</li>
         <li><span>&#128300;</span> Full Scientific Calculator</li>
         <li><span>&#128203;</span> Lists &mdash; groceries, rent, bill split</li>
@@ -2068,7 +2068,7 @@
         'No ads, no tracking'
       ];
       const FEAT_PRO = [
-        'Unit & currency converter (160+ currencies)',
+        'Unit & currency converter (' + (typeof fxAll === 'function' ? fxAll().length + '' : '160+') + ' currencies)',
         'Percentage helper \u2014 tip, tax, markup',
         'Full scientific calculator',
         'Lists \u2014 groceries, rent, bill split',
