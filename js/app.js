@@ -225,7 +225,16 @@ let state = {
   voiceStatus: "",
   micSupported: false,
   textInput: "",
-  showInputHelp: false,
+  // Open on first launch only. The examples panel is the only place voice input is
+  // advertised, and collapsed-by-default meant a new user could open the app and
+  // never learn the headline feature exists. Once they've seen it, it stays closed.
+  showInputHelp: (() => {
+    try {
+      if (localStorage.getItem("tc_seen_help")) return false;
+      localStorage.setItem("tc_seen_help", "1");
+      return true;
+    } catch (e) { return false; }
+  })(),
 };
 
 // Load saved preferences
@@ -698,6 +707,19 @@ function renderSettings(t, fs) {
             • No ads, no tracking
           </div>
         </div>
+        <div class="settings-card" style="background:${t.btnBg};border-color:${t.btnBorder}">
+          <div class="settings-row">
+            <div>
+              <div class="settings-label">⭐ Rate this app</div>
+              <div class="settings-desc">Leave a review on Google Play</div>
+            </div>
+            <button id="rateBtn" aria-label="Rate this app on Google Play"
+              style="background:${t.accent};color:${t.bg};border:none;border-radius:10px;
+                     padding:10px 18px;font-size:1rem;font-weight:700;min-height:44px;cursor:pointer">
+              Rate
+            </button>
+          </div>
+        </div>
       </div>
     </div>`;
 }
@@ -753,6 +775,21 @@ function submitTextInput() {
 function bindSettingsEvents() {
   document.getElementById("backBtn")?.addEventListener("click", () => {
     vibrate(); state.showSettings = false; savePrefs(); render();
+  });
+
+  document.getElementById("rateBtn")?.addEventListener("click", () => {
+    vibrate();
+    // market:// opens the Play app directly and is what the TWA shell can handle.
+    // Plain browsers ignore that scheme, so fall back to the https listing after a
+    // moment if nothing took over the page.
+    const PKG = "io.github.shirblesz.twa";
+    const web = "https://play.google.com/store/apps/details?id=" + PKG;
+    try {
+      window.location.href = "market://details?id=" + PKG;
+      setTimeout(() => { window.open(web, "_blank", "noopener"); }, 700);
+    } catch (e) {
+      window.open(web, "_blank", "noopener");
+    }
   });
 
   document.getElementById("toggleVoice")?.addEventListener("click", () => {

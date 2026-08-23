@@ -1,7 +1,7 @@
 // Bump this on EVERY release. With a cache-first strategy an unchanged name means
 // users keep the old files forever — and worse, index.html and app.js can be served
 // from different generations, producing a mismatched pair that throws at load.
-const CACHE_NAME = 'talkcalc-v3.0';
+const CACHE_NAME = 'talkcalc-v3.1';
 
 // IMPORTANT: every path here is RELATIVE ('./x'), not root-absolute ('/x').
 // This site is served from https://<user>.github.io/easycalc/, so '/index.html'
@@ -56,7 +56,7 @@ self.addEventListener('fetch', event => {
         .then(res => {
           if (res && res.ok) {
             const copy = res.clone();
-            caches.open(CACHE_NAME).then(c => c.put(req, copy)).catch(() => {});
+            caches.open(CACHE_NAME).then(c => c.put(req, copy)).catch(() => { });
           }
           return res;
         })
@@ -81,7 +81,7 @@ self.addEventListener('fetch', event => {
       res || fetch(req).then(net => {
         if (net && (net.ok || net.type === 'opaque')) {
           const copy = net.clone();
-          caches.open(CACHE_NAME).then(c => c.put(req, copy)).catch(() => {});
+          caches.open(CACHE_NAME).then(c => c.put(req, copy)).catch(() => { });
         }
         return net;
       })
