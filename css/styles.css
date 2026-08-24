@@ -1,0 +1,1701 @@
+*,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      /* Inherit the colour the head script set, so the gap between splash
+         fade-out and first render is the app's own background, not white. */
+      background: inherit;
+      font-family: 'Atkinson Hyperlegible', 'Verdana', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+    }
+
+    #app {
+      width: 100%;
+      max-width: 500px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.3s;
+    }
+
+    .header {
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid;
+      transition: all 0.3s;
+    }
+
+    .header h1 {
+      font-size: 1.4rem;
+      font-weight: 800;
+    }
+
+    .header button {
+      font-size: 1.3rem;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-family: inherit;
+      border: 2px solid;
+    }
+
+    .display-wrap {
+      margin: 10px 12px;
+      border-radius: 20px;
+      padding: 16px 20px;
+      border: 3px solid;
+      min-height: 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      flex-shrink: 0;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .history {
+      opacity: 0.5;
+      text-align: right;
+      min-height: 1.4em;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .display-main {
+      font-weight: 800;
+      text-align: right;
+      letter-spacing: 0.02em;
+      word-break: break-all;
+      line-height: 1.2;
+      transition: font-size 0.15s ease;
+    }
+
+    .voice-status {
+      font-size: 0.9rem;
+      text-align: center;
+      margin-top: 6px;
+      font-weight: 700;
+    }
+
+    .voice-status.listening {
+      animation: pulse 1.5s infinite;
+    }
+
+    .input-bar {
+      padding: 0 12px 4px;
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+
+    .input-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      border-radius: 14px;
+      border: 3px solid;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .input-wrap input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-weight: 600;
+      font-family: 'Atkinson Hyperlegible', 'Verdana', sans-serif;
+      padding: 14px 16px;
+      min-width: 0;
+    }
+
+    .go-btn {
+      border: none;
+      font-size: 1.1rem;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 14px 18px;
+      font-family: inherit;
+      display: none;
+    }
+
+    .go-btn.show {
+      display: block;
+    }
+
+    .mic-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 58px;
+      font-size: 1.5rem;
+      color: #FFF;
+      border: 3px solid;
+      border-radius: 14px;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s ease;
+      touch-action: manipulation;
+    }
+
+    .help-toggle {
+      padding: 0 12px 2px;
+      text-align: center;
+    }
+
+    .help-toggle button {
+      background: none;
+      border: none;
+      font-size: 0.82rem;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 600;
+      opacity: 0.8;
+      text-decoration: underline;
+    }
+
+    .help-box {
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-top: 4px;
+      font-size: 0.82rem;
+      text-align: left;
+      line-height: 1.7;
+      border: 2px solid;
+      display: none;
+    }
+
+    .help-box.show {
+      display: block;
+    }
+
+    .btn-grid {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      padding: 6px 12px 12px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 7px;
+      flex: 1;
+    }
+
+    .calc-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-family: 'Atkinson Hyperlegible', 'Verdana', sans-serif;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      outline: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      border: 3px solid;
+      touch-action: manipulation;
+    }
+
+    .calc-btn:active {
+      transform: scale(0.95);
+    }
+
+    .footer {
+      text-align: center;
+      padding: 6px;
+      opacity: 0.35;
+      font-size: 0.75rem;
+    }
+
+    .settings {
+      min-height: 100vh;
+      font-family: 'Atkinson Hyperlegible', 'Verdana', sans-serif;
+      display: none;
+      overflow-y: auto;
+    }
+
+    .settings.show {
+      display: block;
+    }
+
+    .calc-main {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .calc-main.hide {
+      display: none;
+    }
+
+    .settings-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      border-bottom: 2px solid;
+      position: relative;
+    }
+
+    .settings-header button {
+      background: none;
+      border: 2px solid;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 8px 16px 8px 13px;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      line-height: 1;
+      min-height: 44px;
+      position: relative;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.13s ease;
+    }
+
+    /* Same tint-and-press treatment as the notes icon buttons, so navigation feels
+       consistent across the app rather than inert here and tactile there. */
+    .settings-header button::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: currentColor;
+      opacity: 0;
+      transition: opacity 0.16s ease;
+      pointer-events: none;
+    }
+
+    .settings-header button:hover::before,
+    .settings-header button:focus-visible::before {
+      opacity: 0.1;
+    }
+
+    .settings-header button:active::before {
+      opacity: 0.18;
+    }
+
+    .settings-header button:active {
+      transform: scale(0.95);
+    }
+
+    .settings-header button:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+
+    /* Sized to the label's cap height so arrow and word share an optical baseline. */
+    .settings-header button svg {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      display: block;
+      flex-shrink: 0;
+    }
+
+    .settings-header button span {
+      position: relative;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .settings-header button,
+      .settings-header button::before {
+        transition: none;
+      }
+
+      .settings-header button:active {
+        transform: none;
+      }
+    }
+
+    .settings-header h1 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-left: auto;
+    }
+
+    .settings-body {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .settings-card {
+      border-radius: 16px;
+      padding: 20px;
+      border: 2px solid;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .settings-label {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .settings-desc {
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+
+    .toggle {
+      width: 60px;
+      height: 32px;
+      border-radius: 16px;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+      border: 2px solid;
+    }
+
+    .toggle-knob {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      transition: all 0.2s;
+    }
+
+    .size-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .size-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border-radius: 12px;
+      border: 3px solid;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      height: 80px;
+    }
+
+    .theme-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 3px solid;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      width: 100%;
+    }
+
+    .theme-preview {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .top-tabs {
+      display: flex;
+      overflow-x: auto;
+      padding: 8px 12px 0;
+      gap: 6px;
+      border-bottom: 2px solid;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+
+    .top-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .top-tab {
+      flex-shrink: 0;
+      padding: 10px 12px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.82rem;
+      cursor: pointer;
+      border-radius: 12px 12px 0 0;
+      border: 2px solid;
+      border-bottom: none;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .pro-panel {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px 12px 12px;
+      gap: 10px;
+    }
+
+    .pro-panel.active {
+      display: flex;
+    }
+
+    .conv-type-row {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .conv-type-btn {
+      flex: 1;
+      padding: 11px 4px;
+      border-radius: 14px;
+      border: 3px solid;
+      font-weight: 700;
+      font-family: inherit;
+      font-size: 0.88rem;
+      cursor: pointer;
+    }
+
+    /* Two columns: the amount fields, and the unit selects. The swap button lives in
+       column 1 only, so it centres on the input fields rather than on the whole box.
+       Centring it on the box put it ~50px right of the fields' midpoint, because the
+       box is wider than the inputs by the select plus the gap. Grid also means the
+       alignment holds when the selects resize between Length, Weight and Currency. */
+    .converter-box {
+      border-radius: 18px;
+      border: 3px solid;
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      column-gap: 8px;
+      row-gap: 10px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    #curr-search-wrap {
+      grid-column: 1 / -1;
+    }
+
+    /* Every grid item needs an explicit column. Pinning only the swap button left
+       column 2 of its row empty, and grid auto-placement pulled the next item — the
+       second amount field — up into that hole, shunting everything after it by one
+       cell. With all columns declared, the swap simply owns a row of its own. */
+    .conv-input-wrap {
+      grid-column: 1;
+      flex: 1;
+      border-radius: 12px;
+      border: 3px solid;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .conv-input-wrap input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: inherit;
+      font-weight: 700;
+      font-size: 1.2rem;
+      font-family: inherit;
+      padding: 10px 12px;
+      min-width: 0;
+    }
+
+    .conv-unit-select {
+      grid-column: 2;
+      border-radius: 10px;
+      border: 3px solid;
+      font-weight: 700;
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 8px 10px;
+      cursor: pointer;
+      background: transparent;
+      min-width: 76px;
+      flex-shrink: 0;
+    }
+
+    /* A real button now, not a glyph: needs an explicit touch target (44px is the
+       minimum comfortable tap size) and colour inheritance, which buttons don't do. */
+    .conv-swap {
+      grid-column: 1;
+      justify-self: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      font-family: inherit;
+      font-size: 1.4rem;
+      font-weight: 800;
+      line-height: 1;
+      opacity: 0.45;
+      text-align: center;
+      cursor: pointer;
+      color: inherit;
+      min-height: 44px;
+      min-width: 64px;
+      padding: 6px 18px;
+      border-radius: 12px;
+      transition: opacity 0.15s, transform 0.2s;
+    }
+
+    .conv-swap:hover,
+    .conv-swap:focus-visible {
+      opacity: 1;
+    }
+
+    .conv-swap:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+
+    .conv-swap.swapped {
+      transform: rotate(180deg);
+    }
+
+    .currency-search {
+      border-radius: 12px;
+      border: 3px solid;
+      padding: 10px 14px;
+      width: 100%;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      background: transparent;
+      outline: none;
+    }
+
+    .curr-search-msg {
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 6px 4px 0;
+      line-height: 1.35;
+    }
+
+    .fx-note {
+      font-size: 0.75rem;
+      opacity: 0.4;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .pct-card {
+      border-radius: 18px;
+      border: 3px solid;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .pct-card-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      opacity: 0.7;
+    }
+
+    .pct-input-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .pct-input-wrap {
+      flex: 1;
+      border-radius: 10px;
+      border: 3px solid;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .pct-input-wrap input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: inherit;
+      font-weight: 700;
+      font-size: 1.1rem;
+      font-family: inherit;
+      padding: 8px 10px;
+      min-width: 0;
+    }
+
+    .conv-input-wrap input::placeholder,
+    .pct-input-wrap input::placeholder,
+    .currency-search::placeholder,
+    .lst-add input::placeholder,
+    .ec-fld input::placeholder {
+      color: var(--ec-ph, currentColor);
+      opacity: 0.55;
+    }
+
+    .pct-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      opacity: 0.6;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .pct-result {
+      flex: 1;
+      font-size: 1.5rem;
+      font-weight: 800;
+      text-align: right;
+      min-width: 0;
+      word-break: break-all;
+    }
+
+    .pct-result-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0 0;
+    }
+
+    /* Clear and Save are a matched pair: same metrics, same show/hide mechanism.
+       Clear previously used visibility:hidden, which reserves its space, so an empty
+       row left a blank gap and Save appeared shunted to the right of nothing. Both now
+       collapse with display:none and share one .show class.
+       .save-res is declared later in this sheet, so the Save half needs the doubled
+       selector to win on specificity rather than relying on source order. */
+    .pct-clear,
+    .save-res.pct-save {
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 7px 13px;
+      border-radius: 10px;
+      border: 2px solid;
+      background: transparent;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: none;
+      align-items: center;
+      gap: 4px;
+      line-height: 1;
+      min-height: 36px;
+      transition: opacity 0.15s;
+    }
+
+    .pct-clear.show,
+    .save-res.pct-save.show {
+      display: inline-flex;
+    }
+
+    /* Save is the constructive action, so it reads at full strength; Clear is
+       secondary and sits back until you reach for it. */
+    .pct-clear {
+      opacity: 0.75;
+    }
+
+    .pct-clear:active {
+      opacity: 1;
+    }
+
+    .save-res.pct-save:active {
+      opacity: 0.6;
+    }
+
+    .sci-top-row {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .sci-mode-btn {
+      flex: 1;
+      padding: 9px;
+      border-radius: 10px;
+      border: 2px solid;
+      font-weight: 700;
+      font-family: inherit;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    /* RAD/DEG are one either-or pair; INV is an independent toggle, so it sits apart. */
+    .sci-mode-seg {
+      flex: 2;
+      display: flex;
+      gap: 6px;
+    }
+
+    .sci-inv-btn {
+      flex: 1;
+      margin-left: 14px;
+    }
+
+    .sci-flags {
+      display: flex;
+      gap: 6px;
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      min-height: 1.4em;
+      align-items: center;
+    }
+
+    .sci-flag {
+      border: 1px solid currentColor;
+      border-radius: 5px;
+      padding: 1px 5px;
+      opacity: 0.6;
+    }
+
+    .sci-display {
+      border-radius: 14px;
+      border: 3px solid;
+      padding: 10px 16px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      min-height: 72px;
+    }
+
+    .sci-hist-line {
+      font-size: 0.78rem;
+      opacity: 0.5;
+      font-weight: 600;
+      min-height: 1em;
+      text-align: right;
+    }
+
+    .sci-val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      text-align: right;
+      word-break: break-all;
+    }
+
+    .sci-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .sci-row {
+      display: flex;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .sci-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-family: inherit;
+      border-radius: 10px;
+      cursor: pointer;
+      border: 2px solid;
+      font-size: 0.78rem;
+      touch-action: manipulation;
+      min-height: 40px;
+    }
+
+    .sci-btn:active {
+      transform: scale(0.93);
+    }
+
+    .trial-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 12px;
+      border: 2px solid;
+      padding: 8px 10px 8px 14px;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .trial-bar .msg {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .trial-bar .go {
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.8rem;
+      text-decoration: underline;
+      cursor: pointer;
+      padding: 6px 4px;
+      min-height: 34px;
+      flex-shrink: 0;
+    }
+
+    .notes-subtabs {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    /* Soft tinted button rather than a solid accent slab. `.notes-subtab` had no rule
+       at all, so it rendered as a browser-default box with the accent painted on. */
+    .lst-new-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      border-radius: 16px;
+      border: 2px solid;
+      background: transparent;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+      padding: 13px 16px;
+      min-height: 50px;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .lst-new-btn .plus {
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1;
+      opacity: 0.9;
+    }
+
+    .lst-new-btn:active {
+      transform: scale(0.985);
+    }
+
+    .notes-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .empty-msg {
+      text-align: center;
+      opacity: 0.45;
+      padding: 30px 16px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.6;
+    }
+
+    .empty-msg strong {
+      display: block;
+      font-size: 1.05rem;
+      opacity: 1;
+      margin-bottom: 6px;
+    }
+
+    /* Lists overview */
+    .lst-card {
+      border-radius: 14px;
+      border: 3px solid;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-family: inherit;
+      text-align: left;
+      width: 100%;
+      background: transparent;
+    }
+
+    .lst-card .grow {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .lst-name {
+      font-size: 1rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .lst-meta {
+      font-size: 0.75rem;
+      opacity: 0.55;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    .lst-total {
+      font-size: 1.15rem;
+      font-weight: 800;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* One list */
+    .lst-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      padding-bottom: 8px;
+    }
+
+    .lst-bar .ttl {
+      flex: 1;
+      min-width: 0;
+      font-size: 1.05rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Square, not 40x46: equal padding on both axes makes the three read as a set.
+       The tint overlay uses currentColor so it follows the theme without hardcoding. */
+    .lst-ico {
+      position: relative;
+      overflow: hidden;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border-radius: 13px;
+      border: 1.5px solid;
+      background: transparent;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.13s ease, border-color 0.16s ease;
+    }
+
+    .lst-ico::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: currentColor;
+      opacity: 0;
+      transition: opacity 0.16s ease;
+      pointer-events: none;
+    }
+
+    .lst-ico:hover::before,
+    .lst-ico:focus-visible::before {
+      opacity: 0.1;
+    }
+
+    .lst-ico:active::before {
+      opacity: 0.18;
+    }
+
+    .lst-ico:active {
+      transform: scale(0.92);
+    }
+
+    .lst-ico:focus-visible {
+      outline: 2px solid currentColor;
+      outline-offset: 2px;
+    }
+
+    .lst-ico svg {
+      position: relative;
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+
+    /* Circles read optically larger than an arrow at the same box size. */
+    #lst-share svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    #lst-more svg {
+      width: 19px;
+      height: 19px;
+    }
+
+    /* Back is navigation; share and options act on the list — group them apart. */
+    .lst-actions {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+      margin-left: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .lst-ico,
+      .lst-ico::before {
+        transition: none;
+      }
+
+      .lst-ico:active {
+        transform: none;
+      }
+    }
+
+    .itm {
+      border-radius: 12px;
+      border: 2px solid;
+      padding: 9px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .itm .lb {
+      flex: 1;
+      min-width: 0;
+      font-weight: 700;
+      font-size: 0.95rem;
+      word-break: break-word;
+      text-align: left;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 2px 0;
+      cursor: pointer;
+    }
+
+    .itm .am {
+      font-weight: 800;
+      font-size: 1.05rem;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+      background: none;
+      border: none;
+      font-family: inherit;
+      padding: 2px 0;
+      cursor: pointer;
+    }
+
+    .itm .x {
+      background: none;
+      border: none;
+      font-size: 1.15rem;
+      cursor: pointer;
+      opacity: 0.35;
+      padding: 4px 6px;
+      font-family: inherit;
+      min-width: 34px;
+      min-height: 34px;
+    }
+
+    /* Saved results strip */
+    .recent {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      flex-shrink: 0;
+      padding: 6px 0 2px;
+    }
+
+    .recent .chip {
+      display: flex;
+      align-items: stretch;
+      border-radius: 10px;
+      border: 2px solid;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .recent .chip-use {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1px;
+      background: transparent;
+      border: none;
+      font-family: inherit;
+      padding: 5px 8px 5px 10px;
+      cursor: pointer;
+      max-width: 150px;
+    }
+
+    .recent .chip-nm {
+      font-size: 0.68rem;
+      font-weight: 700;
+      opacity: 0.6;
+      max-width: 132px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .recent .chip-vl {
+      font-size: 0.88rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .recent .chip-x {
+      background: transparent;
+      border: none;
+      font-family: inherit;
+      font-size: 1rem;
+      opacity: 0.4;
+      cursor: pointer;
+      padding: 0 9px;
+      min-width: 32px;
+    }
+
+    /* Save buttons on the calculator tabs */
+    .save-res {
+      border-radius: 10px;
+      border: 2px solid;
+      background: transparent;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.78rem;
+      padding: 7px 11px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-height: 40px;
+    }
+
+    .save-res:active {
+      opacity: 0.6;
+    }
+
+    /* Footer: totals + add bar */
+    .lst-foot {
+      flex-shrink: 0;
+      border-top: 2px solid;
+      padding-top: 8px;
+    }
+
+    .lst-split {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding-bottom: 7px;
+    }
+
+    .lst-split .each {
+      margin-left: auto;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .stp {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .stp button {
+      border-radius: 8px;
+      border: 2px solid;
+      background: transparent;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.95rem;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+    }
+
+    .stp span {
+      min-width: 24px;
+      text-align: center;
+      font-weight: 800;
+    }
+
+    .lst-total-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 8px;
+    }
+
+    .lst-total-line .k {
+      font-size: 0.8rem;
+      font-weight: 700;
+      opacity: 0.6;
+    }
+
+    .lst-total-line .v {
+      font-size: 1.7rem;
+      font-weight: 800;
+      text-align: right;
+      word-break: break-all;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lst-add {
+      display: flex;
+      gap: 6px;
+      align-items: stretch;
+    }
+
+    .lst-add .wrap {
+      flex: 1;
+      display: flex;
+      border-radius: 12px;
+      border: 3px solid;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .lst-add input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 10px 11px;
+      min-width: 0;
+    }
+
+    .lst-add #li-label {
+      flex: 1.5;
+    }
+
+    .lst-add #li-amt {
+      flex: 1;
+      text-align: right;
+      border-left: 2px solid;
+    }
+
+    .lst-add .go {
+      border-radius: 12px;
+      border: 3px solid;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 1.2rem;
+      padding: 0 15px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .lst-mic {
+      border-radius: 12px;
+      border: 3px solid;
+      background: transparent;
+      font-size: 1.05rem;
+      padding: 0 12px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .paywall-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .paywall-overlay.show {
+      display: flex;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .paywall-sheet {
+      width: 100%;
+      max-width: 500px;
+      border-radius: 28px 28px 0 0;
+      padding: 24px 22px 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: slideUp 0.3s ease;
+    }
+
+    .pw-close {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      cursor: pointer;
+      align-self: flex-end;
+      opacity: 0.45;
+      padding: 0;
+    }
+
+    .pw-badge {
+      align-self: center;
+      font-size: 2.6rem;
+    }
+
+    .pw-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .pw-sub {
+      text-align: center;
+      opacity: 0.65;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .pw-features {
+      list-style: none;
+      border-radius: 14px;
+      border: 2px solid;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .pw-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .pw-buy {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      border: none;
+      font-size: 1.1rem;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    .pw-buy:active {
+      transform: scale(0.97);
+    }
+
+    .pw-restore {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.88rem;
+      font-weight: 600;
+      opacity: 0.55;
+      cursor: pointer;
+      text-decoration: underline;
+      align-self: center;
+    }
+
+    .lang-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 2px solid;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      width: 100%;
+      background: transparent;
+      margin-top: 6px;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    /* Bottom sheets (replaces prompt/confirm, which Android WebView may suppress) */
+    .ec-sheet-ov {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 1200;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .ec-sheet-ov.show {
+      display: flex;
+      animation: fadeIn 0.18s ease;
+    }
+
+    .ec-sheet {
+      width: 100%;
+      max-width: 500px;
+      max-height: 85vh;
+      overflow-y: auto;
+      border-radius: 26px 26px 0 0;
+      padding: 20px 20px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: slideUp 0.25s ease;
+    }
+
+    .ec-sheet h3 {
+      margin: 0;
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+
+    .ec-sheet .sub {
+      font-size: 0.85rem;
+      opacity: 0.6;
+      font-weight: 600;
+      margin: -6px 0 2px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .ec-fld {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .ec-fld label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      opacity: 0.65;
+    }
+
+    .ec-fld input {
+      border-radius: 12px;
+      border: 3px solid;
+      padding: 12px 13px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 1rem;
+      background: transparent;
+      outline: none;
+      width: 100%;
+    }
+
+    .ec-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 14px;
+      border: 2px solid;
+      padding: 13px 15px;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: 0.98rem;
+      cursor: pointer;
+      background: transparent;
+      text-align: left;
+      width: 100%;
+      min-height: 50px;
+    }
+
+    .ec-row .ic {
+      font-size: 1.05rem;
+      width: 22px;
+      flex-shrink: 0;
+    }
+
+    .ec-sheet-btns {
+      display: flex;
+      gap: 9px;
+      margin-top: 4px;
+    }
+
+    .ec-sheet-btns button {
+      flex: 1;
+      border-radius: 13px;
+      border: 3px solid;
+      padding: 13px 10px;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+      background: transparent;
+      min-height: 50px;
+    }
+
+    .ec-stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 4px 0 2px;
+    }
+
+    .ec-stepper button {
+      border-radius: 12px;
+      border: 3px solid;
+      background: transparent;
+      font-family: inherit;
+      font-weight: 800;
+      font-size: 1.4rem;
+      width: 54px;
+      height: 54px;
+      cursor: pointer;
+    }
+
+    .ec-stepper .n {
+      font-size: 2rem;
+      font-weight: 800;
+      min-width: 56px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%)
+      }
+
+      to {
+        transform: translateY(0)
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: 0.5
+      }
+    }
+
+    @keyframes micPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(0, 200, 83, 0.5)
+      }
+
+      50% {
+        box-shadow: 0 0 0 10px rgba(0, 200, 83, 0.15)
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(0, 200, 83, 0.5)
+      }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+      body {
+        overflow-y: auto;
+      }
+
+      #app {
+        height: auto;
+        min-height: 100vh;
+      }
+
+      .calc-main {
+        height: auto;
+        min-height: 100vh;
+      }
+
+      .display-wrap {
+        min-height: 70px;
+        margin: 6px 10px;
+        padding: 10px 16px;
+      }
+
+      .input-bar {
+        padding: 0 10px 2px;
+      }
+
+      .help-toggle {
+        padding: 0 10px 1px;
+      }
+
+      .btn-grid {
+        gap: 5px;
+        padding: 4px 10px 8px;
+      }
+
+      .btn-row {
+        gap: 5px;
+      }
+
+      .calc-btn {
+        min-height: 44px !important;
+        font-size: 1.1rem !important;
+      }
+
+      .header {
+        padding: 6px 12px;
+      }
+
+      .header h1 {
+        font-size: 1.1rem;
+      }
+
+      .mic-btn {
+        min-height: 44px !important;
+      }
+
+      .footer {
+        padding: 4px;
+        font-size: 0.65rem;
+      }
+    }
