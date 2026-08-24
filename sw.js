@@ -1,25 +1,28 @@
-// Bump this on EVERY release. With a cache-first strategy an unchanged name means
-// users keep the old files forever — and worse, index.html and app.js can be served
-// from different generations, producing a mismatched pair that throws at load.
+// Bump this on EVERY release. Under stale-while-revalidate a stale cache now
+// survives an extra launch by design, so the version name is the only thing
+// guaranteeing users eventually land on a consistent set of files.
 const CACHE_NAME = 'talkcalc-v3.1';
 
-// IMPORTANT: every path here is RELATIVE ('./x'), not root-absolute ('/x').
-// This site is served from https://<user>.github.io/easycalc/, so '/index.html'
-// resolves to the DOMAIN root and 404s. Relative paths resolve against the
-// location of sw.js, which is the correct project directory on GitHub Pages
-// and still correct if the app is ever moved to a custom domain root.
-const SHELL = ['./', './index.html', './js/app.js', './js/iap.js'];
-const ASSETS = ['./manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
+// Relative paths ('./x'), never root-absolute ('/x'). The app is served from
+// https://<user>.github.io/easycalc/, so '/index.html' would resolve to the DOMAIN
+// root and 404. Relative paths resolve against sw.js's own location, which is
+// correct here and stays correct if the app ever moves to a domain root.
+const SHELL = ['./', './index.html', './js/app.js', './js/iap.js', './js/panels.js'];
+const ASSETS = [
+  './css/styles.css',
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png'
+];
 
-// Absolute URL of the offline fallback document, resolved once.
 const OFFLINE_URL = new URL('./index.html', self.location).href;
 
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      // Deliberately NOT cache.addAll(): addAll is all-or-nothing, so a single
-      // 404 (a renamed icon, say) aborts the whole install and the worker never
-      // activates — which looks exactly like "offline mode is broken".
+      // Deliberately not cache.addAll(): addAll is all-or-nothing, so one 404
+      // aborts the whole install and the worker never activates — which presents
+      // as "offline mode is broken" with no obvious cause.
       .then(cache => Promise.all(
         SHELL.concat(ASSETS).map(url =>
           cache.add(url).catch(err => console.warn('[sw] precache miss:', url, err))
@@ -37,54 +40,46 @@ self.addEventListener('activate', event => {
   );
 });
 
-const isShell = req =>
-  req.mode === 'navigate' ||
-  req.destination === 'document' ||
-  req.destination === 'script';
-
 self.addEventListener('fetch', event => {
   const req = event.request;
   if (req.method !== 'GET') return;
 
-  // Network-first for HTML and JS. Cache-first here was why a code change could sit
-  // unused on a device indefinitely, and why the two script files could fall out of
-  // sync with each other. The cache is still written on every success, so offline
-  // still works — it just stops being the first choice when the network is there.
-  if (isShell(req)) {
-    event.respondWith(
-      fetch(req)
-        .then(res => {
-          if (res && res.ok) {
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then(c => c.put(req, copy)).catch(() => { });
-          }
-          return res;
-        })
-        .catch(() =>
-          caches.match(req).then(r => {
-            if (r) return r;
-            // Only fall back to the app shell for navigations. Handing index.html
-            // to a failed <script> request would execute HTML as JS.
-            if (req.mode === 'navigate') return caches.match(OFFLINE_URL);
-            return Response.error();
-          })
-        )
-    );
-    return;
-  }
-
-  // Cache-first is correct for icons, the manifest, and the web font: they rarely
-  // change and the network round-trip would just slow down first paint. Cross-origin
-  // responses (Google Fonts) come back opaque, which is fine to store and replay.
+  // Stale-while-revalidate for everything.
+  //
+  // The previous network-first strategy cost ~580ms on every launch, because the
+  // page waited for the network even when a perfectly good copy was already in the
+  // cache. Here the cached copy is returned immediately and the network fetch runs
+  // in the background to refresh the cache for NEXT launch.
+  //
+  // The trade-off: a deployed change reaches a device one launch later than it
+  // used to. That is the deliberate price of a fast start.
   event.respondWith(
-    caches.match(req).then(res =>
-      res || fetch(req).then(net => {
-        if (net && (net.ok || net.type === 'opaque')) {
-          const copy = net.clone();
-          caches.open(CACHE_NAME).then(c => c.put(req, copy)).catch(() => { });
+    caches.open(CACHE_NAME).then(cache =>
+      cache.match(req).then(cached => {
+        const network = fetch(req)
+          .then(res => {
+            if (res && (res.ok || res.type === 'opaque')) {
+              cache.put(req, res.clone()).catch(() => {});
+            }
+            return res;
+          })
+          .catch(() => null);
+
+        // Cache hit: serve it now, let the refresh finish on its own time.
+        if (cached) {
+          event.waitUntil(network);
+          return cached;
         }
-        return net;
+
+        // Cache miss: nothing to serve but the network.
+        return network.then(res => {
+          if (res) return res;
+          // Offline with no cached copy. Only navigations get the app shell —
+          // handing index.html to a failed <script> would execute HTML as JS.
+          if (req.mode === 'navigate') return cache.match(OFFLINE_URL);
+          return Response.error();
+        });
       })
-    ).catch(() => Response.error())
+    )
   );
 });
